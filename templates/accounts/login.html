@@ -1,0 +1,741 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Community-Based Nutritional Monitoring and Decision Support System
+    </title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+          
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+
+    background:linear-gradient(135deg,#157347,#198754,#20a162);
+
+    overflow:hidden;
+
+}
+
+/* LEFT PANEL */
+
+.left-panel{
+
+    background:linear-gradient(
+        180deg,
+        rgba(255,255,255,.10),
+        rgba(255,255,255,.04)
+    );
+
+    backdrop-filter:blur(10px);
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    position:relative;
+
+    border-right:1px solid rgba(255,255,255,.15);
+
+}
+
+.left-panel::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:380px;
+
+    height:380px;
+
+    background:rgba(255,255,255,.06);
+
+    border-radius:50%;
+
+    top:-120px;
+
+    left:-120px;
+
+}
+
+.left-panel::after{
+
+    content:"";
+
+    position:absolute;
+
+    width:250px;
+
+    height:250px;
+
+    background:rgba(255,255,255,.05);
+
+    border-radius:50%;
+
+    bottom:-80px;
+
+    right:-80px;
+
+}
+
+.left-content{
+
+    width:82%;
+
+    max-width:430px;
+
+    z-index:5;
+
+}
+
+.logo{
+
+    width:75px;
+
+    height:75px;
+
+    background:rgba(255,255,255,.15);
+
+    border:1px solid rgba(255,255,255,.20);
+
+    color:white;
+
+    border-radius:50%;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+}
+
+.logo i{
+
+    font-size:35px;
+
+}
+
+.left-content h1{
+
+    font-size:27px;
+
+    font-weight:700;
+
+    line-height:1.35;
+
+    margin-bottom:18px;
+
+}
+
+.left-content p{
+
+    font-size:15px;
+
+    opacity:.92;
+
+    line-height:1.8;
+
+}
+
+/* FEATURE BOX */
+
+.feature-box{
+
+    background:rgba(255,255,255,.12);
+
+    border:1px solid rgba(255,255,255,.15);
+
+    backdrop-filter:blur(15px);
+
+    border-radius:15px;
+
+    padding:15px;
+
+    height:115px;
+
+    transition:.35s;
+
+}
+
+.feature-box:hover{
+
+    transform:translateY(-5px);
+
+    background:rgba(255,255,255,.18);
+
+}
+
+.feature-box i{
+
+    font-size:22px;
+
+}
+
+.feature-box h6{
+
+    margin-top:10px;
+
+    font-weight:600;
+
+}
+
+.feature-box small{
+
+    opacity:.9;
+
+}
+
+/* RIGHT PANEL */
+
+.right-panel{
+
+    background:transparent;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+/* LOGIN CARD */
+
+.login-card{
+
+    width:430px;
+
+    background:rgba(255,255,255,.12);
+
+    backdrop-filter:blur(20px);
+
+    border:1px solid rgba(255,255,255,.18);
+
+    border-radius:22px;
+
+    padding:40px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.20);
+
+    color:white;
+
+}
+
+.login-card h2{
+
+    color:white;
+
+    font-weight:bold;
+
+}
+
+.login-card p{
+
+    color:#e8fff2;
+
+}
+
+.form-label{
+
+    color:white;
+
+    font-weight:600;
+
+}
+
+/* INPUTS */
+
+.form-control{
+
+    background:rgba(255,255,255,.12);
+
+    border:1px solid rgba(255,255,255,.20);
+
+    color:white;
+
+    height:48px;
+
+}
+
+.form-control::placeholder{
+
+    color:#ddf8e7;
+
+}
+
+.form-control:focus{
+
+    background:rgba(255,255,255,.18);
+
+    color:white;
+
+    border-color:white;
+
+    box-shadow:0 0 15px rgba(255,255,255,.20);
+
+}
+
+.input-group-text{
+
+    background:rgba(255,255,255,.12);
+
+    border:1px solid rgba(255,255,255,.20);
+
+    color:white;
+
+}
+
+.btn-outline-secondary{
+
+    background:rgba(255,255,255,.12);
+
+    border:1px solid rgba(255,255,255,.20);
+
+    color:white;
+
+}
+
+.btn-outline-secondary:hover{
+
+    background:rgba(255,255,255,.20);
+
+    color:white;
+
+}
+
+.btn-success{
+
+    background:white;
+
+    color:#198754;
+
+    border:none;
+
+    height:48px;
+
+    font-weight:bold;
+
+}
+
+.btn-success:hover{
+
+    background:#f3f3f3;
+
+    color:#198754;
+
+}
+
+.footer{
+
+    color:#ecfff2;
+
+    font-size:13px;
+
+    text-align:center;
+
+}
+
+@media(max-width:992px){
+
+.left-panel{
+
+display:none;
+
+}
+
+.right-panel{
+
+width:100%;
+
+}
+
+.login-card{
+
+width:92%;
+
+}
+
+body{
+
+overflow:auto;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container-fluid">
+
+<div class="row vh-100">
+
+    <!-- LEFT SIDE -->
+
+    <div class="col-lg-5 left-panel">
+
+        <div class="left-content">
+
+            <div class="logo">
+
+                <i class="bi bi-heart-pulse-fill"></i>
+
+            </div>
+
+            <h1>
+
+                Community-Based Nutritional Monitoring and Decision Support System
+
+            </h1>
+
+            <p>
+
+                Empowering Barangay Health Workers through digital nutrition monitoring,
+                assessment, analytics and reporting.
+
+            </p>
+
+            <div class="row mt-4">
+
+                <div class="col-6 mb-3">
+
+                    <div class="feature-box">
+
+                        <i class="bi bi-people-fill"></i>
+
+                        <h6>Residents</h6>
+
+                        <small>Manage resident records.</small>
+
+                    </div>
+
+                </div>
+
+                <div class="col-6 mb-3">
+
+                    <div class="feature-box">
+
+                        <i class="bi bi-heart-pulse-fill"></i>
+
+                        <h6>Assessment</h6>
+
+                        <small>BMI & Nutrition Status.</small>
+
+                    </div>
+
+                </div>
+
+                <div class="col-6">
+
+                    <div class="feature-box">
+
+                        <i class="bi bi-bar-chart-fill"></i>
+
+                        <h6>Analytics</h6>
+
+                        <small>Charts & Trends.</small>
+
+                    </div>
+
+                </div>
+
+                <div class="col-6">
+
+                    <div class="feature-box">
+
+                        <i class="bi bi-file-earmark-text-fill"></i>
+
+                        <h6>Reports</h6>
+
+                        <small>Printable Reports.</small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+        <!-- RIGHT SIDE -->
+
+        <div class="col-lg-7 right-panel">
+
+            <div class="login-card">
+
+                <div class="text-center mb-4">
+
+                    <h2>
+
+                        Welcome Back
+
+                    </h2>
+
+                    <p>
+
+                        Sign in to continue
+
+                    </p>
+
+                </div>
+
+                {% if form.errors %}
+
+                <div class="alert alert-danger">
+
+                    Invalid username or password.
+
+                </div>
+
+                {% endif %}
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            Username
+
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text">
+
+                                <i class="bi bi-person-fill"></i>
+
+                            </span>
+
+                            <input
+                                type="text"
+                                name="username"
+                                class="form-control"
+                                placeholder="Enter Username"
+                                required>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        <label class="form-label">
+
+                            Password
+
+                        </label>
+
+                        <div class="input-group">
+
+                            <span class="input-group-text">
+
+                                <i class="bi bi-lock-fill"></i>
+
+                            </span>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-control"
+                                placeholder="Enter Password"
+                                required>
+
+                            <button
+                                class="btn btn-outline-secondary"
+                                type="button"
+                                id="togglePassword">
+
+                                <i class="bi bi-eye"></i>
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <button class="btn btn-success w-100">
+
+                        <i class="bi bi-box-arrow-in-right"></i>
+
+                        Login
+
+                    </button>
+
+                </form>
+
+                <div class="footer mt-4">
+
+                    © 2026 Community-Based Nutritional Monitoring and Decision Support System
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    </div>
+
+    <script>
+
+// ==========================
+// Show / Hide Password
+// ==========================
+
+const togglePassword = document.getElementById("togglePassword");
+const password = document.getElementById("password");
+
+togglePassword.addEventListener("click", function(){
+
+    const type = password.getAttribute("type") === "password"
+        ? "text"
+        : "password";
+
+    password.setAttribute("type", type);
+
+    this.innerHTML =
+        type === "password"
+        ? '<i class="bi bi-eye"></i>'
+        : '<i class="bi bi-eye-slash"></i>';
+
+});
+
+// ==========================
+// Fade-in Animation
+// ==========================
+
+window.addEventListener("load", function(){
+
+    document.querySelector(".login-card").classList.add("show-card");
+
+});
+
+</script>
+
+<style>
+
+/* Fade-in Animation */
+
+.login-card{
+
+    opacity:0;
+
+    transform:translateY(25px);
+
+    transition:.6s ease;
+
+}
+
+.login-card.show-card{
+
+    opacity:1;
+
+    transform:translateY(0);
+
+}
+
+/* Inputs */
+
+.form-control:focus{
+
+    border-color:#198754;
+
+    box-shadow:0 0 0 .2rem rgba(25,135,84,.20);
+
+}
+
+/* Login Button */
+
+.btn-success{
+
+    transition:.3s;
+
+}
+
+.btn-success:hover{
+
+    box-shadow:0 12px 25px rgba(25,135,84,.30);
+
+}
+
+/* Feature Cards */
+
+.feature-box{
+
+    cursor:pointer;
+
+}
+
+/* Logo Animation */
+
+.logo{
+
+    animation:floatLogo 4s ease-in-out infinite;
+
+}
+
+@keyframes floatLogo{
+
+    0%{
+
+        transform:translateY(0);
+
+    }
+
+    50%{
+
+        transform:translateY(-8px);
+
+    }
+
+    100%{
+
+        transform:translateY(0);
+
+    }
+
+}
+
+</style>
+
+</body>
+
+</html>

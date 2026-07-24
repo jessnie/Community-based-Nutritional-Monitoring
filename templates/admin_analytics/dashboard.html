@@ -1,0 +1,209 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+
+<style>
+
+.analytics-card{
+    border:none;
+    border-radius:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.analytics-card:hover{
+    transform:translateY(-5px);
+}
+
+</style>
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+            Analytics Dashboard
+        </h2>
+
+        <p class="text-muted">
+            Community-Based Nutritional Monitoring System
+        </p>
+
+    </div>
+
+    <div class="row">
+
+        <!-- PIE CHART -->
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card analytics-card">
+
+                <div class="card-header bg-success text-white">
+
+                    <h5 class="mb-0">
+                        Nutritional Status Distribution
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="pieChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- BAR CHART -->
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card analytics-card">
+
+                <div class="card-header bg-primary text-white">
+
+                    <h5 class="mb-0">
+                        Monthly Assessments
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="barChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- LINE CHART -->
+
+    <div class="card analytics-card">
+
+        <div class="card-header bg-dark text-white">
+
+            <h5 class="mb-0">
+                Assessment Trend
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <canvas id="lineChart"></canvas>
+
+        </div>
+
+    </div>
+
+</div>
+
+{{ months|json_script:"months-data" }}
+{{ monthly_counts|json_script:"counts-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const months = JSON.parse(document.getElementById("months-data").textContent);
+const counts = JSON.parse(document.getElementById("counts-data").textContent);
+
+/* PIE CHART */
+
+new Chart(document.getElementById("pieChart"), {
+
+    type: "pie",
+
+    data: {
+
+        labels: [
+            "Normal",
+            "Underweight",
+            "Overweight",
+            "Obese"
+        ],
+
+        datasets: [{
+
+            data: [
+                Number("{{ normal }}"),
+                Number("{{ underweight }}"),
+                Number("{{ overweight }}"),
+                Number("{{ obese }}")
+            ],
+
+            backgroundColor: [
+                "#198754",
+                "#ffc107",
+                "#0d6efd",
+                "#dc3545"
+            ]
+
+        }]
+
+    }
+
+});
+
+/* BAR CHART */
+
+new Chart(document.getElementById("barChart"), {
+
+    type: "bar",
+
+    data: {
+
+        labels: months,
+
+        datasets: [{
+
+            label: "Assessments",
+
+            data: counts,
+
+            backgroundColor: "#0d6efd"
+
+        }]
+
+    }
+
+});
+
+/* LINE CHART */
+
+new Chart(document.getElementById("lineChart"), {
+
+    type: "line",
+
+    data: {
+
+        labels: months,
+
+        datasets: [{
+
+            label: "Assessment Trend",
+
+            data: counts,
+
+            borderColor: "#198754",
+
+            fill: false,
+
+            tension: 0.3
+
+        }]
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-success text-white">
+
+        <h4>Resident Profile</h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <p><strong>Resident ID:</strong> {{ resident.resident_id }}</p>
+
+                <p><strong>Full Name:</strong> {{ resident.first_name }} {{ resident.last_name }}</p>
+
+                <p><strong>Sex:</strong> {{ resident.sex }}</p>
+
+                <p><strong>Date of Birth:</strong> {{ resident.birth_date }}</p>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <p><strong>Address:</strong> {{ resident.address }}</p>
+
+                <p><strong>Contact Number:</strong> {{ resident.contact_number }}</p>
+
+                <p><strong>Guardian:</strong> {{ resident.guardian_name }}</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card shadow-sm">
+
+    <div class="card-header bg-primary text-white">
+
+        <h5>Nutrition Assessment History</h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-bordered table-hover">
+
+            <thead class="table-light">
+
+                <tr>
+
+                    <th>Date</th>
+                    <th>Height (cm)</th>
+                    <th>Weight (kg)</th>
+                    <th>BMI</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for assessment in assessments %}
+
+                <tr>
+
+                    <td>{{ assessment.assessment_date }}</td>
+
+                    <td>{{ assessment.height }}</td>
+
+                    <td>{{ assessment.weight }}</td>
+
+                    <td>{{ assessment.bmi }}</td>
+
+                    <td>
+
+                        {% if assessment.nutritional_status == "Normal" %}
+
+                            <span class="badge bg-success">
+                                {{ assessment.nutritional_status }}
+                            </span>
+
+                        {% elif assessment.nutritional_status == "Underweight" %}
+
+                            <span class="badge bg-warning text-dark">
+                                {{ assessment.nutritional_status }}
+                            </span>
+
+                        {% elif assessment.nutritional_status == "Overweight" %}
+
+                            <span class="badge bg-info text-dark">
+                                {{ assessment.nutritional_status }}
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-danger">
+                                {{ assessment.nutritional_status }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>{{ assessment.remarks }}</td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6" class="text-center">
+
+                        No nutrition assessments found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+        <a href="{% url 'resident_list' %}" class="btn btn-secondary">
+
+            Back to Residents
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

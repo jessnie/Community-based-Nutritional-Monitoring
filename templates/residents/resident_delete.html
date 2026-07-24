@@ -1,0 +1,36 @@
+{% extends 'base_staff.html' %}
+
+{% block content %}
+
+<div class="card shadow">
+
+    <div class="card-header bg-danger text-white">
+        <h4>Delete Resident</h4>
+    </div>
+
+    <div class="card-body">
+
+        <p>
+            Are you sure you want to delete
+            <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>?
+        </p>
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <button class="btn btn-danger">
+                Delete
+            </button>
+
+            <a href="{% url 'resident_list' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

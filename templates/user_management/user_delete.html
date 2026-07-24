@@ -1,0 +1,53 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+
+<div class="card shadow">
+
+    <div class="card-header bg-danger text-white">
+
+        <h4>Delete User</h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <p>
+
+            Are you sure you want to delete
+
+            <strong>
+
+                {{ user.username }}
+
+            </strong>?
+
+        </p>
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+            <button type="submit"
+
+                    class="btn btn-danger">
+
+                Delete
+
+            </button>
+
+            <a href="{% url 'user_list' %}"
+
+               class="btn btn-secondary">
+
+                Cancel
+
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

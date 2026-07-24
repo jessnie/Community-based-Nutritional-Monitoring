@@ -1,0 +1,713 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+
+<style>
+
+.report-card{
+
+    border:none;
+
+    border-radius:20px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+    transition:.3s;
+
+}
+
+.report-card:hover{
+
+    transform:translateY(-5px);
+
+}
+
+.icon-box{
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:15px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:white;
+
+    font-size:28px;
+
+}
+
+.bg-report{
+    background:#198754;
+}
+
+.bg-month{
+    background:#0d6efd;
+}
+
+.bg-pdf{
+    background:#dc3545;
+}
+
+.bg-excel{
+    background:#fd7e14;
+}
+
+.section-title{
+
+    font-weight:700;
+
+    color:#198754;
+
+}
+
+</style>
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                Reports Dashboard
+
+            </h2>
+
+            <p class="text-muted">
+
+                Generate and export community nutrition reports.
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- REPORT CARDS -->
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card report-card">
+
+                <div class="card-body d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <small class="text-muted">
+
+                            Total Reports
+
+                        </small>
+
+                        <h2 class="fw-bold">
+
+                            {{ total_reports }}
+
+                        </h2>
+
+                    </div>
+
+                    <div class="icon-box bg-report">
+
+                        <i class="bi bi-file-earmark-text-fill"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card report-card">
+
+                <div class="card-body d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <small class="text-muted">
+
+                            Monthly Reports
+
+                        </small>
+
+                        <h2 class="fw-bold">
+
+                            {{ monthly_reports }}
+
+                        </h2>
+
+                    </div>
+
+                    <div class="icon-box bg-month">
+
+                        <i class="bi bi-calendar-check-fill"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card report-card">
+
+                <div class="card-body d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <small class="text-muted">
+
+                            PDF Exports
+
+                        </small>
+
+                        <h2 class="fw-bold">
+
+                            {{ pdf_exports }}
+
+                        </h2>
+
+                    </div>
+
+                    <div class="icon-box bg-pdf">
+
+                        <i class="bi bi-filetype-pdf"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card report-card">
+
+                <div class="card-body d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <small class="text-muted">
+
+                            Excel Exports
+
+                        </small>
+
+                        <h2 class="fw-bold">
+
+                            {{ excel_exports }}
+
+                        </h2>
+
+                    </div>
+
+                    <div class="icon-box bg-excel">
+
+                        <i class="bi bi-file-earmark-excel-fill"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- GENERATE REPORTS -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-success text-white">
+
+            <h5 class="mb-0">
+
+                Generate Reports
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+
+                    <!-- GENERATE REPORTS -->
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-success text-white">
+
+        <h5 class="mb-0">
+
+            Generate Reports
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <a href="{% url 'monthly_report' %}" class="btn btn-success w-100">
+
+                    <i class="bi bi-calendar-month"></i>
+
+                    Generate Monthly Report
+
+                </a>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <a href="{% url 'annual_report' %}" class="btn btn-primary w-100">
+
+                    <i class="bi bi-calendar3"></i>
+
+                    Generate Annual Report
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- EXPORT REPORTS -->
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header bg-dark text-white">
+
+        <h5 class="mb-0">
+
+            Export Reports
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <a href="{% url 'export_pdf' %}" class="btn btn-danger w-100">
+
+                    <i class="bi bi-filetype-pdf"></i>
+
+                    Export PDF
+
+                </a>
+
+            </div>
+
+            <div class="col-md-6 mb-3">
+
+                <a href="{% url 'export_excel' %}" class="btn btn-warning w-100">
+
+                    <i class="bi bi-file-earmark-excel-fill"></i>
+
+                    Export Excel
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- FILTERS -->
+
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header">
+
+            <h5 class="mb-0">
+
+                Filter Reports
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="GET">
+
+                <div class="row">
+                                        <div class="col-md-4">
+
+                        <label class="form-label">
+
+                            Nutritional Status
+
+                        </label>
+
+                        <select
+                            name="status"
+                            class="form-select">
+
+                            <option value="">
+
+                                All Status
+
+                            </option>
+
+                            <option value="Normal"
+                                {% if status == "Normal" %}selected{% endif %}>
+
+                                Normal
+
+                            </option>
+
+                            <option value="Underweight"
+                                {% if status == "Underweight" %}selected{% endif %}>
+
+                                Underweight
+
+                            </option>
+
+                            <option value="Overweight"
+                                {% if status == "Overweight" %}selected{% endif %}>
+
+                                Overweight
+
+                            </option>
+
+                            <option value="Obese"
+                                {% if status == "Obese" %}selected{% endif %}>
+
+                                Obese
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+
+                            Resident
+
+                        </label>
+
+                        <select
+                            name="resident"
+                            class="form-select">
+
+                            <option value="">
+
+                                All Residents
+
+                            </option>
+
+                            {% for r in residents %}
+
+                            <option
+                                value="{{ r.id }}"
+                                {% if resident_id == r.id|stringformat:"s" %}selected{% endif %}>
+
+                                {{ r.first_name }} {{ r.last_name }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-end">
+
+                        <button
+                            class="btn btn-success w-100">
+
+                            <i class="bi bi-search"></i>
+
+                            Filter Reports
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- REPORT TABLE -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-success text-white">
+
+            <h5 class="mb-0">
+
+                Nutrition Assessment Records
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover table-bordered align-middle">
+
+                    <thead class="table-success">
+
+                        <tr>
+
+                            <th>Date</th>
+
+                            <th>Resident</th>
+
+                            <th>Age</th>
+
+                            <th>Sex</th>
+
+                            <th>Height</th>
+
+                            <th>Weight</th>
+
+                            <th>BMI</th>
+
+                            <th>Status</th>
+
+                            <th>Remarks</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for a in assessments %}
+
+                        <tr>
+
+                            <td>
+
+                                {{ a.assessment_date }}
+
+                            </td>
+
+                            <td>
+
+                                {{ a.resident.first_name }}
+                                {{ a.resident.last_name }}
+
+                            </td>
+
+                            <td>
+
+                                {{ a.resident.age }}
+
+                            </td>
+
+                            <td>
+
+                                {{ a.resident.sex }}
+
+                            </td>
+
+                            <td>
+
+                                {{ a.height }} cm
+
+                            </td>
+
+                            <td>
+
+                                {{ a.weight }} kg
+
+                            </td>
+
+                            <td>
+
+                                <strong>
+
+                                    {{ a.bmi }}
+
+                                </strong>
+
+                            </td>
+
+                            <td>
+
+                                {% if a.nutritional_status == "Normal" %}
+
+                                    <span class="badge bg-success">
+
+                                        {{ a.nutritional_status }}
+
+                                    </span>
+
+                                {% elif a.nutritional_status == "Underweight" %}
+
+                                    <span class="badge bg-warning text-dark">
+
+                                        {{ a.nutritional_status }}
+
+                                    </span>
+
+                                {% elif a.nutritional_status == "Overweight" %}
+
+                                    <span class="badge bg-primary">
+
+                                        {{ a.nutritional_status }}
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+
+                                        {{ a.nutritional_status }}
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ a.remarks }}
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="9" class="text-center">
+
+                                No nutrition reports found.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+        <!-- PRINT STYLES -->
+
+    <style>
+
+    @media print {
+
+        body{
+
+            background:white !important;
+
+        }
+
+        .sidebar,
+        .topbar,
+        .btn,
+        form,
+        .card-header{
+
+            display:none !important;
+
+        }
+
+        .content{
+
+            margin:0 !important;
+
+        }
+
+        .main-content{
+
+            padding:0 !important;
+
+        }
+
+        .card{
+
+            border:none !important;
+
+            box-shadow:none !important;
+
+        }
+
+        table{
+
+            font-size:12px;
+
+        }
+
+        h2{
+
+            text-align:center;
+
+            margin-bottom:20px;
+
+        }
+
+    }
+
+    </style>
+
+</div>
+
+{% endblock %}

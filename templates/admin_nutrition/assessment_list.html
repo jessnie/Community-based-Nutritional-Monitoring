@@ -1,0 +1,148 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h3>
+        Nutrition Assessment Management
+    </h3>
+
+</div>
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-body">
+
+        <table class="table table-hover align-middle">
+
+            <thead class="table-success">
+
+                <tr>
+
+                    <th>Resident</th>
+                    <th>Date</th>
+                    <th>Height (cm)</th>
+                    <th>Weight (kg)</th>
+                    <th>BMI</th>
+                    <th>Status</th>
+                    <th width="180">Actions</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for assessment in assessments %}
+
+                <tr>
+
+                    <td>
+
+                        {{ assessment.resident.first_name }}
+                        {{ assessment.resident.last_name }}
+
+                    </td>
+
+                    <td>
+
+                        {{ assessment.assessment_date }}
+
+                    </td>
+
+                    <td>
+
+                        {{ assessment.height }}
+
+                    </td>
+
+                    <td>
+
+                        {{ assessment.weight }}
+
+                    </td>
+
+                    <td>
+
+                        {{ assessment.bmi }}
+
+                    </td>
+
+                    <td>
+
+                        {% if assessment.nutritional_status == "Normal" %}
+
+                            <span class="badge bg-success">
+                                {{ assessment.nutritional_status }}
+                            </span>
+
+                        {% elif assessment.nutritional_status == "Underweight" %}
+
+                            <span class="badge bg-warning text-dark">
+                                {{ assessment.nutritional_status }}
+                            </span>
+
+                        {% elif assessment.nutritional_status == "Overweight" %}
+
+                            <span class="badge bg-info">
+                                {{ assessment.nutritional_status }}
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-danger">
+                                {{ assessment.nutritional_status }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        <a href="{% url 'edit_assessment' assessment.id %}"
+                           class="btn btn-warning btn-sm">
+
+                            <i class="bi bi-pencil-square"></i>
+
+                            Edit
+
+                        </a>
+
+                        <a href="{% url 'delete_assessment' assessment.id %}"
+                           class="btn btn-danger btn-sm">
+
+                            <i class="bi bi-trash"></i>
+
+                            Delete
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="7" class="text-center">
+
+                        No nutrition assessments found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

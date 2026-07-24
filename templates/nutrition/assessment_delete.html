@@ -1,0 +1,86 @@
+{% extends 'base_staff.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-md-6">
+
+        <div class="card shadow border-0">
+
+            <div class="card-header bg-danger text-white">
+
+                <h4 class="mb-0">
+                    Delete Nutrition Assessment
+                </h4>
+
+            </div>
+
+            <div class="card-body">
+
+                <p class="fs-5">
+
+                    Are you sure you want to delete this nutrition assessment?
+
+                </p>
+
+                <hr>
+
+                <p>
+
+                    <strong>Resident:</strong>
+
+                    {{ assessment.resident.first_name }}
+                    {{ assessment.resident.last_name }}
+
+                </p>
+
+                <p>
+
+                    <strong>Assessment Date:</strong>
+
+                    {{ assessment.assessment_date }}
+
+                </p>
+
+                <p>
+
+                    <strong>Status:</strong>
+
+                    {{ assessment.nutritional_status }}
+
+                </p>
+
+                <form method="POST">
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-danger">
+
+                        <i class="bi bi-trash-fill"></i>
+
+                        Delete
+
+                    </button>
+
+                    <a
+                        href="{% url 'assessment_list' %}"
+                        class="btn btn-secondary">
+
+                        Cancel
+
+                    </a>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

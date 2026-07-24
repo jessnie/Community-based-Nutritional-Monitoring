@@ -1,0 +1,137 @@
+{% extends 'base_staff.html' %}
+
+{% block content %}
+
+<div class="row g-4">
+
+    <div class="col-lg-2 col-md-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-people-fill text-primary fs-1"></i>
+
+                <h6 class="mt-2">Residents</h6>
+
+                <h2>{{ total_residents }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-heart-fill text-success fs-1"></i>
+
+                <h6 class="mt-2">Normal</h6>
+
+                <h2>{{ normal }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-exclamation-circle-fill text-warning fs-1"></i>
+
+                <h6 class="mt-2">Underweight</h6>
+
+                <h2>{{ underweight }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-arrow-up-circle-fill text-info fs-1"></i>
+
+                <h6 class="mt-2">Overweight</h6>
+
+                <h2>{{ overweight }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-x-circle-fill text-danger fs-1"></i>
+
+                <h6 class="mt-2">Obese</h6>
+
+                <h2>{{ obese }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-2 col-md-4">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-clipboard2-pulse-fill text-secondary fs-1"></i>
+
+                <h6 class="mt-2">Assessments</h6>
+
+                <h2>{{ total_assessments }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="card shadow-sm mt-4">
+
+    <div class="card-body">
+
+        <h4>Dashboard Overview</h4>
+
+        <hr>
+
+        <p>
+            Welcome to the <strong>Community-Based Nutritional Monitoring and Decision Support System</strong>.
+        </p>
+
+        <p>
+            This dashboard provides real-time information on the nutritional status of community residents based on recorded nutrition assessments.
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}

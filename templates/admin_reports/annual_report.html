@@ -1,0 +1,189 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <h3 class="mb-0">
+
+                        Annual Nutrition Report
+
+                    </h3>
+
+                    <small>
+
+                        Year {{ current_year }}
+
+                    </small>
+
+                </div>
+
+                <div>
+
+                    <button
+                        onclick="window.print()"
+                        class="btn btn-light">
+
+                        <i class="bi bi-printer-fill"></i>
+
+                        Print
+
+                    </button>
+
+                    <a
+                        href="{% url 'report_dashboard' %}"
+                        class="btn btn-warning">
+
+                        <i class="bi bi-arrow-left"></i>
+
+                        Back
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row text-center mb-4">
+
+                <div class="col-md-6">
+
+                    <div class="border rounded p-3">
+
+                        <h6>Total Assessments</h6>
+
+                        <h2 class="text-primary">
+
+                            {{ assessments|length }}
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <div class="border rounded p-3">
+
+                        <h6>Report Year</h6>
+
+                        <h2>
+
+                            {{ current_year }}
+
+                        </h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <table class="table table-bordered table-hover">
+
+                <thead class="table-primary">
+
+                    <tr>
+
+                        <th>Date</th>
+                        <th>Resident</th>
+                        <th>Age</th>
+                        <th>Sex</th>
+                        <th>Height</th>
+                        <th>Weight</th>
+                        <th>BMI</th>
+                        <th>Status</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for assessment in assessments %}
+
+                    <tr>
+
+                        <td>{{ assessment.assessment_date }}</td>
+
+                        <td>
+
+                            {{ assessment.resident.first_name }}
+                            {{ assessment.resident.last_name }}
+
+                        </td>
+
+                        <td>{{ assessment.resident.age }}</td>
+
+                        <td>{{ assessment.resident.sex }}</td>
+
+                        <td>{{ assessment.height }} cm</td>
+
+                        <td>{{ assessment.weight }} kg</td>
+
+                        <td>{{ assessment.bmi }}</td>
+
+                        <td>{{ assessment.nutritional_status }}</td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="8" class="text-center">
+
+                            No assessments found for this year.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+@media print{
+
+    .sidebar,
+    .topbar,
+    .btn{
+
+        display:none !important;
+
+    }
+
+    .content{
+
+        margin-left:0 !important;
+
+    }
+
+}
+
+</style>
+
+{% endblock %}

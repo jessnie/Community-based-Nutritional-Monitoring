@@ -1,0 +1,187 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+
+<style>
+
+.log-card{
+    border:none;
+    border-radius:18px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.icon-box{
+    width:60px;
+    height:60px;
+    border-radius:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:28px;
+    background:#198754;
+}
+
+</style>
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+                Activity Logs
+            </h2>
+
+            <p class="text-muted">
+                Monitor all user activities within the system.
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- SUMMARY CARD -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-4">
+
+            <div class="card log-card">
+
+                <div class="card-body d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <small class="text-muted">
+
+                            Total Logs
+
+                        </small>
+
+                        <h2 class="fw-bold">
+
+                            {{ total_logs }}
+
+                        </h2>
+
+                    </div>
+
+                    <div class="icon-box">
+
+                        <i class="bi bi-clock-history"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TABLE -->
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-success text-white">
+
+            <h5 class="mb-0">
+
+                Activity History
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover table-bordered align-middle">
+
+                    <thead class="table-success">
+
+                        <tr>
+
+                            <th>Date & Time</th>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                            <th>Description</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% for log in logs %}
+
+                        <tr>
+
+                            <td>
+
+                                {{ log.timestamp|date:"M d, Y h:i A" }}
+
+                            </td>
+
+                            <td>
+
+                                {{ log.user.username }}
+
+                            </td>
+
+                            <td>
+
+                                {{ log.role }}
+
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-primary">
+
+                                    {{ log.action }}
+
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                {{ log.description }}
+
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+
+                            <td colspan="5" class="text-center">
+
+                                No activity logs found.
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

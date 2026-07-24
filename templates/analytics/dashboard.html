@@ -1,0 +1,154 @@
+{% extends 'base_staff.html' %}
+
+{% block content %}
+
+<h2 class="mb-4">Analytics Dashboard</h2>
+
+<!-- SUMMARY CARDS -->
+<div class="row g-3">
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <h6>Total Residents</h6>
+                <h3>{{ total_residents }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm text-center">
+            <div class="card-body">
+                <h6>Total Assessments</h6>
+                <h3>{{ total_assessments }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm text-center text-success">
+            <h6>Normal</h6>
+            <h3>{{ normal }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm text-center text-warning">
+            <h6>Underweight</h6>
+            <h3>{{ underweight }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm text-center text-danger">
+            <h6>Overweight + Obese</h6>
+            <h3>{{ overweight|add:obese }}</h3>
+        </div>
+    </div>
+
+</div>
+
+<!-- CHART SECTION -->
+<div class="row mt-4">
+
+    <!-- PIE CHART -->
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                Nutritional Status Distribution
+            </div>
+            <div class="card-body">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- BAR CHART -->
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                Monthly Assessments
+            </div>
+            <div class="card-body">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- LINE CHART -->
+<div class="card mt-4 shadow-sm">
+    <div class="card-header bg-dark text-white">
+        Assessment Trend
+    </div>
+    <div class="card-body">
+        <canvas id="lineChart"></canvas>
+    </div>
+</div>
+
+<!-- SAFE DATA PASSING (NO ERRORS) -->
+{{ months|json_script:"months-data" }}
+{{ monthly_counts|json_script:"counts-data" }}
+
+<!-- CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const months = JSON.parse(document.getElementById('months-data').textContent);
+const counts = JSON.parse(document.getElementById('counts-data').textContent);
+
+/* PIE CHART */
+new Chart(document.getElementById('pieChart'), {
+    type: 'pie',
+    data: {
+        labels: ['Normal', 'Underweight', 'Overweight', 'Obese'],
+        datasets: [{
+            data: [
+                Number("{{ normal }}"),
+                Number("{{ underweight }}"),
+                Number("{{ overweight }}"),
+                Number("{{ obese }}")
+            ],
+            backgroundColor: [
+                '#198754',
+                '#ffc107',
+                '#fd7e14',
+                '#dc3545'
+            ]
+        }]
+    }
+});
+
+/* BAR CHART */
+new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+        labels: months,
+        datasets: [{
+            label: 'Assessments',
+            data: counts,
+            backgroundColor: '#0d6efd'
+        }]
+    }
+});
+
+/* LINE CHART */
+new Chart(document.getElementById('lineChart'), {
+    type: 'line',
+    data: {
+        labels: months,
+        datasets: [{
+            label: 'Trend',
+            data: counts,
+            borderColor: '#198754',
+            fill: false,
+            tension: 0.3
+        }]
+    }
+});
+
+</script>
+
+{% endblock %}
