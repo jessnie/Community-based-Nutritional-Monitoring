@@ -3,13 +3,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 
 from .forms import NutritionAssessmentForm
 from .models import NutritionAssessment
+from residents.models import Resident
 from activity_logs.models import ActivityLog
 
 
 def get_template(request, staff_template, admin_template):
-    """
-    Return the correct template depending on the logged-in user.
-    """
     if request.user.is_superuser:
         return admin_template
     return staff_template
@@ -18,13 +16,22 @@ def get_template(request, staff_template, admin_template):
 @login_required(login_url='login')
 def assessment_list(request):
 
-    assessments = NutritionAssessment.objects.select_related(
-        'resident'
-    ).order_by('-assessment_date')
+    residents = Resident.objects.all().order_by(
+        'last_name',
+        'first_name'
+    )
 
-    context = {
-        'assessments': assessments
-    }
+    assessments = []
+
+    for resident in residents:
+
+        latest = resident.assessments.order_by(
+            '-assessment_date',
+            '-id'
+        ).first()
+
+        if latest:
+            assessments.append(latest)
 
     return render(
         request,
@@ -33,17 +40,27 @@ def assessment_list(request):
             'nutrition/assessment_list.html',
             'admin_nutrition/assessment_list.html'
         ),
-        context
+        {
+            'assessments': assessments
+        }
     )
 
 
 @login_required(login_url='login')
-def add_assessment(request):
+def add_assessment(request, resident_id=None):
 
     if request.user.is_superuser:
         return redirect('assessment_list')
 
-    if request.method == 'POST':
+    resident = None
+
+    if resident_id:
+        resident = get_object_or_404(
+            Resident,
+            pk=resident_id
+        )
+
+    if request.method == "POST":
 
         form = NutritionAssessmentForm(request.POST)
 
@@ -62,21 +79,36 @@ def add_assessment(request):
                 )
             )
 
+            if resident:
+                return redirect(
+                    'view_resident',
+                    resident.id
+                )
+
             return redirect('assessment_list')
 
     else:
 
-        form = NutritionAssessmentForm()
+        if resident:
 
-    context = {
-        'form': form,
-        'title': 'Add Nutrition Assessment'
-    }
+            form = NutritionAssessmentForm(
+                initial={
+                    'resident': resident
+                }
+            )
+
+        else:
+
+            form = NutritionAssessmentForm()
 
     return render(
         request,
         'nutrition/assessment_form.html',
-        context
+        {
+            'form': form,
+            'resident': resident,
+            'title': 'Add Nutrition Assessment'
+        }
     )
 
 
@@ -88,7 +120,7 @@ def edit_assessment(request, pk):
         pk=pk
     )
 
-    if request.method == 'POST':
+    if request.method == "POST":
 
         form = NutritionAssessmentForm(
             request.POST,
@@ -118,11 +150,6 @@ def edit_assessment(request, pk):
             instance=assessment
         )
 
-    context = {
-        'form': form,
-        'title': 'Edit Nutrition Assessment'
-    }
-
     return render(
         request,
         get_template(
@@ -130,7 +157,10 @@ def edit_assessment(request, pk):
             'nutrition/assessment_form.html',
             'admin_nutrition/assessment_form.html'
         ),
-        context
+        {
+            'form': form,
+            'title': 'Edit Nutrition Assessment'
+        }
     )
 
 
@@ -142,7 +172,7 @@ def delete_assessment(request, pk):
         pk=pk
     )
 
-    if request.method == 'POST':
+    if request.method == "POST":
 
         resident_name = (
             f"{assessment.resident.first_name} "
@@ -153,9 +183,7 @@ def delete_assessment(request, pk):
             user=request.user,
             role="Admin" if request.user.is_superuser else "Staff",
             action="Delete Assessment",
-            description=(
-                f"Deleted nutrition assessment for {resident_name}"
-            )
+            description=f"Deleted nutrition assessment for {resident_name}"
         )
 
         assessment.delete()

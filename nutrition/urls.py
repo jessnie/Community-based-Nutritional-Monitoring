@@ -16,6 +16,12 @@ urlpatterns = [
     ),
 
     path(
+        'add/<int:resident_id>/',
+        views.add_assessment,
+        name='add_assessment_resident'
+    ),
+
+    path(
         'edit/<int:pk>/',
         views.edit_assessment,
         name='edit_assessment'

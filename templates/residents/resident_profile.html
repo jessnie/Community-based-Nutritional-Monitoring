@@ -28,11 +28,13 @@
 
             <div class="col-md-6">
 
-                <p><strong>Address:</strong> {{ resident.address }}</p>
+                <p><strong>Zone:</strong> {{ resident.address }}</p>
 
                 <p><strong>Contact Number:</strong> {{ resident.contact_number }}</p>
 
-                <p><strong>Guardian:</strong> {{ resident.guardian_name }}</p>
+                {% if resident.guardian_name %}
+                    <p><strong>Guardian:</strong> {{ resident.guardian_name }}</p>
+                {% endif %}
 
             </div>
 
@@ -135,11 +137,24 @@
 
         </table>
 
-        <a href="{% url 'resident_list' %}" class="btn btn-secondary">
+        <div class="d-flex justify-content-between">
 
-            Back to Residents
+            <a href="{% url 'add_assessment_resident' resident.id %}"
+               class="btn btn-success">
 
-        </a>
+                <i class="bi bi-plus-circle"></i>
+                New Assessment
+
+            </a>
+
+            <a href="{% url 'resident_list' %}"
+               class="btn btn-secondary">
+
+                Back to Residents
+
+            </a>
+
+        </div>
 
     </div>
 
