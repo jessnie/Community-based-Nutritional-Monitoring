@@ -31,9 +31,40 @@
 
 body{
 
-    background:#f4f6f9;
+    background:
+        radial-gradient(circle at top left, rgba(25, 135, 84, 0.14), transparent 28%),
+        linear-gradient(135deg, #f8fbf8 0%, #f2f6f7 55%, #eef4fa 100%);
+
+    color:#243447;
     overflow-x:hidden;
 
+}
+
+body::before,
+body::after{
+    content:'';
+    position:fixed;
+    border-radius:50%;
+    filter:blur(70px);
+    opacity:.35;
+    pointer-events:none;
+    z-index:0;
+}
+
+body::before{
+    width:280px;
+    height:280px;
+    top:-60px;
+    left:-60px;
+    background:#9be6b3;
+}
+
+body::after{
+    width:260px;
+    height:260px;
+    right:-40px;
+    bottom:-40px;
+    background:#cfe8ff;
 }
 
 /* ==========================
@@ -149,9 +180,16 @@ CONTENT
 
 }
 
+.content,
+.main-content{
+    position:relative;
+    z-index:1;
+}
+
 .main-content{
 
     padding:30px;
+    background:transparent;
 
 }
 

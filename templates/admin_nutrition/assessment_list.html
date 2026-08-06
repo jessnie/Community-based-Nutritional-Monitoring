@@ -102,20 +102,20 @@
                     <td>
 
                         <a href="{% url 'edit_assessment' assessment.id %}"
-                           class="btn btn-warning btn-sm">
+                           class="btn btn-warning btn-sm"
+                           aria-label="Edit assessment"
+                           title="Edit">
 
-                            <i class="bi bi-pencil-square"></i>
-
-                            Edit
+                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
 
                         </a>
 
                         <a href="{% url 'delete_assessment' assessment.id %}"
-                           class="btn btn-danger btn-sm">
+                           class="btn btn-danger btn-sm"
+                           aria-label="Delete assessment"
+                           title="Delete">
 
-                            <i class="bi bi-trash"></i>
-
-                            Delete
+                            <i class="bi bi-trash" aria-hidden="true"></i>
 
                         </a>
 

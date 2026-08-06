@@ -1,9 +1,13 @@
 from openpyxl import Workbook
 from openpyxl.styles import Font
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import render
 from django.utils import timezone
 from django.http import HttpResponse
+
+from activity_logs.models import ActivityLog
+from activity_logs.utils import log_activity
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
@@ -32,7 +36,7 @@ def get_template(request, staff_template, admin_template):
 def report_dashboard(request):
 
     status = request.GET.get('status', '')
-    resident_id = request.GET.get('resident', '')
+    resident_name = request.GET.get('resident_name', '').strip()
 
     assessments = NutritionAssessment.objects.all().order_by(
         '-assessment_date'
@@ -44,13 +48,12 @@ def report_dashboard(request):
             nutritional_status=status
         )
 
-    # Filter by resident
-    if resident_id:
+    # Filter by resident name
+    if resident_name:
         assessments = assessments.filter(
-            resident_id=resident_id
+            Q(resident__first_name__icontains=resident_name) |
+            Q(resident__last_name__icontains=resident_name)
         )
-
-    residents = Resident.objects.all()
 
     today = timezone.now()
 
@@ -61,14 +64,18 @@ def report_dashboard(request):
         assessment_date__year=today.year
     ).count()
 
-    pdf_exports = 0
-    excel_exports = 0
+    pdf_exports = ActivityLog.objects.filter(
+        action='Export PDF'
+    ).count()
+
+    excel_exports = ActivityLog.objects.filter(
+        action='Export Excel'
+    ).count()
 
     context = {
         'assessments': assessments,
-        'residents': residents,
         'status': status,
-        'resident_id': resident_id,
+        'resident_name': resident_name,
         'total_reports': total_reports,
         'monthly_reports': monthly_reports,
         'pdf_exports': pdf_exports,
@@ -251,6 +258,12 @@ def export_pdf(request):
 
     doc.build(elements)
 
+    log_activity(
+        request.user,
+        'Export PDF',
+        'Exported nutrition report as PDF'
+    )
+
     return response
 
 
@@ -373,5 +386,11 @@ def export_excel(request):
         worksheet.column_dimensions[column].width = width
 
     workbook.save(response)
+
+    log_activity(
+        request.user,
+        'Export Excel',
+        'Exported nutrition report as Excel'
+    )
 
     return response

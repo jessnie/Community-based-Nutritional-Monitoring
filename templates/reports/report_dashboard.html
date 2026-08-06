@@ -19,41 +19,64 @@
 <form method="GET" class="row g-2 mb-3">
 
     <div class="col-md-4">
+
         <select name="status" class="form-control">
+
             <option value="">All Status</option>
-            <option value="Normal" {% if status == "Normal" %}selected{% endif %}>Normal</option>
-            <option value="Underweight" {% if status == "Underweight" %}selected{% endif %}>Underweight</option>
-            <option value="Overweight" {% if status == "Overweight" %}selected{% endif %}>Overweight</option>
-            <option value="Obese" {% if status == "Obese" %}selected{% endif %}>Obese</option>
+
+            <option value="Normal"
+                {% if status == "Normal" %}selected{% endif %}>
+                Normal
+            </option>
+
+            <option value="Underweight"
+                {% if status == "Underweight" %}selected{% endif %}>
+                Underweight
+            </option>
+
+            <option value="Overweight"
+                {% if status == "Overweight" %}selected{% endif %}>
+                Overweight
+            </option>
+
+            <option value="Obese"
+                {% if status == "Obese" %}selected{% endif %}>
+                Obese
+            </option>
+
         </select>
+
     </div>
 
     <div class="col-md-4">
-        <select name="resident" class="form-control">
-            <option value="">All Residents</option>
 
-            {% for r in residents %}
-                <option value="{{ r.id }}"
-                    {% if resident_id == r.id|stringformat:"s" %}selected{% endif %}>
-                    {{ r.first_name }} {{ r.last_name }}
-                </option>
-            {% endfor %}
+        <input
+            type="text"
+            name="resident_name"
+            class="form-control"
+            placeholder="Search Resident by name"
+            value="{{ resident_name }}"
+        >
 
-        </select>
     </div>
 
     <div class="col-md-4">
+
         <button class="btn btn-success w-100">
+
             Filter
+
         </button>
+
     </div>
 
 </form>
 
-<!-- REPORT TITLE (PRINT FRIENDLY) -->
+<!-- REPORT TITLE -->
 <div class="text-center mb-3">
 
     <h5>Community-Based Nutritional Monitoring System</h5>
+
     <p class="mb-0">Nutrition Assessment Report</p>
 
 </div>
@@ -66,14 +89,18 @@
         <table class="table table-bordered table-hover">
 
             <thead class="table-success">
+
                 <tr>
+
                     <th>Date</th>
                     <th>Resident</th>
                     <th>Height (cm)</th>
                     <th>Weight (kg)</th>
                     <th>BMI</th>
                     <th>Status</th>
+
                 </tr>
+
             </thead>
 
             <tbody>
@@ -81,20 +108,34 @@
                 {% for a in assessments %}
 
                 <tr>
+
                     <td>{{ a.assessment_date }}</td>
-                    <td>{{ a.resident.first_name }} {{ a.resident.last_name }}</td>
+
+                    <td>
+                        {{ a.resident.first_name }}
+                        {{ a.resident.last_name }}
+                    </td>
+
                     <td>{{ a.height }}</td>
+
                     <td>{{ a.weight }}</td>
+
                     <td>{{ a.bmi }}</td>
+
                     <td>{{ a.nutritional_status }}</td>
+
                 </tr>
 
                 {% empty %}
 
                 <tr>
+
                     <td colspan="6" class="text-center">
+
                         No records found
+
                     </td>
+
                 </tr>
 
                 {% endfor %}
@@ -109,6 +150,7 @@
 
 <!-- PRINT STYLE -->
 <style>
+
 @media print {
 
     body {
@@ -130,7 +172,9 @@
     table {
         font-size: 12px;
     }
+
 }
+
 </style>
 
 {% endblock %}

@@ -32,7 +32,7 @@ class Resident(models.Model):
 
     birth_date = models.DateField()
 
-    # CHANGED FROM ADDRESS TO ZONE
+    # Zone
     address = models.CharField(
         max_length=100
     )
@@ -67,6 +67,27 @@ class Resident(models.Model):
                 (self.birth_date.month, self.birth_date.day)
             )
         )
+
+    @property
+    def age_category(self):
+        """
+        Automatically determines the resident's age category.
+        """
+
+        if self.age <= 5:
+            return "Under Five"
+
+        elif self.age <= 12:
+            return "Child"
+
+        elif self.age <= 17:
+            return "Adolescent"
+
+        elif self.age <= 59:
+            return "Adult"
+
+        else:
+            return "Senior Citizen"
 
     def save(self, *args, **kwargs):
 

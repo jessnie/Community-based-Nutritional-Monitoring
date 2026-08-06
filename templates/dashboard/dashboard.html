@@ -2,136 +2,287 @@
 
 {% block content %}
 
-<div class="row g-4">
+<style>
+    .dashboard-hero {
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        border-radius: 20px;
+        color: white;
+        padding: 24px 28px;
+        margin-bottom: 24px;
+    }
 
-    <div class="col-lg-2 col-md-4">
+    .dashboard-card {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+    }
 
-        <div class="card shadow-sm border-0">
+    .dashboard-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    }
 
-            <div class="card-body text-center">
+    .dashboard-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
 
-                <i class="bi bi-people-fill text-primary fs-1"></i>
+    .section-title {
+        color: #198754;
+        font-weight: 700;
+        margin-bottom: 14px;
+    }
+</style>
 
-                <h6 class="mt-2">Residents</h6>
-
-                <h2>{{ total_residents }}</h2>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="col-lg-2 col-md-4">
-
-        <div class="card shadow-sm border-0">
-
-            <div class="card-body text-center">
-
-                <i class="bi bi-heart-fill text-success fs-1"></i>
-
-                <h6 class="mt-2">Normal</h6>
-
-                <h2>{{ normal }}</h2>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="col-lg-2 col-md-4">
-
-        <div class="card shadow-sm border-0">
-
-            <div class="card-body text-center">
-
-                <i class="bi bi-exclamation-circle-fill text-warning fs-1"></i>
-
-                <h6 class="mt-2">Underweight</h6>
-
-                <h2>{{ underweight }}</h2>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="col-lg-2 col-md-4">
-
-        <div class="card shadow-sm border-0">
-
-            <div class="card-body text-center">
-
-                <i class="bi bi-arrow-up-circle-fill text-info fs-1"></i>
-
-                <h6 class="mt-2">Overweight</h6>
-
-                <h2>{{ overweight }}</h2>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="col-lg-2 col-md-4">
-
-        <div class="card shadow-sm border-0">
-
-            <div class="card-body text-center">
-
-                <i class="bi bi-x-circle-fill text-danger fs-1"></i>
-
-                <h6 class="mt-2">Obese</h6>
-
-                <h2>{{ obese }}</h2>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="col-lg-2 col-md-4">
-
-        <div class="card shadow-sm border-0">
-
-            <div class="card-body text-center">
-
-                <i class="bi bi-clipboard2-pulse-fill text-secondary fs-1"></i>
-
-                <h6 class="mt-2">Assessments</h6>
-
-                <h2>{{ total_assessments }}</h2>
-
-            </div>
-
-        </div>
-
-    </div>
-
+<div class="dashboard-hero">
+    <h3 class="fw-bold mb-2">Community Health Dashboard</h3>
+    <h4 class="fw-semibold mb-2">Welcome Staff</h4>
+    <p class="mb-2">Welcome to the <strong>Community-Based Nutritional Monitoring and Decision Support System.</strong></p>
+    <p class="mb-0">This dashboard provides a real-time view of resident demographics and nutrition monitoring results for Barangay Can-Uguib.</p>
 </div>
 
-<div class="card shadow-sm mt-4">
+<div class="mb-4">
+    <h5 class="section-title">
+        <i class="bi bi-people-fill"></i> Population Summary
+    </h5>
 
-    <div class="card-body">
+    <div class="row g-3">
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Total Population</small>
+                        <h3 class="fw-bold mb-0">{{ total_population }}</h3>
+                    </div>
+                    <div class="dashboard-icon" style="background:#0d6efd">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <h4>Dashboard Overview</h4>
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Male</small>
+                        <h3 class="fw-bold mb-0">{{ total_male }}</h3>
+                    </div>
+                    <div class="dashboard-icon" style="background:#0dcaf0">
+                        <i class="bi bi-gender-male"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <hr>
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Female</small>
+                        <h3 class="fw-bold mb-0">{{ total_female }}</h3>
+                    </div>
+                    <div class="dashboard-icon" style="background:#dc3545">
+                        <i class="bi bi-gender-female"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <p>
-            Welcome to the <strong>Community-Based Nutritional Monitoring and Decision Support System</strong>.
-        </p>
+        <div class="col-lg-3 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Senior Citizens</small>
+                        <h3 class="fw-bold mb-0">{{ seniors }}</h3>
+                    </div>
+                    <div class="dashboard-icon" style="background:#fd7e14">
+                        <i class="bi bi-person-heart"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <p>
-            This dashboard provides real-time information on the nutritional status of community residents based on recorded nutrition assessments.
-        </p>
+<div class="mb-4">
+    <div class="row g-3">
+        <div class="col-lg-4 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Children</small>
+                        <h3 class="fw-bold mb-0">{{ children }}</h3>
+                    </div>
+                    <div class="dashboard-icon" style="background:#198754">
+                        <i class="bi bi-balloon-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <div class="col-lg-4 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Adolescents</small>
+                        <h3 class="fw-bold mb-0">{{ adolescents }}</h3>
+                    </div>
+                    <div class="dashboard-icon" style="background:#6f42c1">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card dashboard-card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Adults</small>
+                        <h3 class="fw-bold mb-0">{{ adults }}</h3>
+                    </div>
+                    <div class="dashboard-icon" style="background:#6c757d">
+                        <i class="bi bi-person-workspace"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-4">
+    <h5 class="section-title">
+        <i class="bi bi-heart-pulse-fill"></i> Nutrition Summary
+    </h5>
+
+    <div class="row g-3">
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card dashboard-card">
+                <div class="card-body text-center">
+                    <div class="dashboard-icon mx-auto mb-2" style="background:#198754">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    <small class="text-muted">Normal</small>
+                    <h3 class="fw-bold mb-0">{{ normal }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card dashboard-card">
+                <div class="card-body text-center">
+                    <div class="dashboard-icon mx-auto mb-2" style="background:#ffc107">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                    </div>
+                    <small class="text-muted">Underweight</small>
+                    <h3 class="fw-bold mb-0">{{ underweight }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card dashboard-card">
+                <div class="card-body text-center">
+                    <div class="dashboard-icon mx-auto mb-2" style="background:#0d6efd">
+                        <i class="bi bi-arrow-up-circle-fill"></i>
+                    </div>
+                    <small class="text-muted">Overweight</small>
+                    <h3 class="fw-bold mb-0">{{ overweight }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card dashboard-card">
+                <div class="card-body text-center">
+                    <div class="dashboard-icon mx-auto mb-2" style="background:#dc3545">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </div>
+                    <small class="text-muted">Obese</small>
+                    <h3 class="fw-bold mb-0">{{ obese }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="card dashboard-card">
+                <div class="card-body text-center">
+                    <div class="dashboard-icon mx-auto mb-2" style="background:#20c997">
+                        <i class="bi bi-clipboard2-pulse-fill"></i>
+                    </div>
+                    <small class="text-muted">Total Assessments</small>
+                    <h3 class="fw-bold mb-0">{{ total_assessments }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-2">
+    <div class="col-lg-6">
+        <div class="card dashboard-card h-100">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3 text-success">
+                    <i class="bi bi-clock-history"></i> Recent Residents
+                </h5>
+                {% if recent_residents %}
+                    <ul class="list-group list-group-flush">
+                        {% for resident in recent_residents %}
+                            <li class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>
+                                        <div class="text-muted small">{{ resident.address }}</div>
+                                    </div>
+                                    <span class="badge bg-success-subtle text-success">New</span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No recent residents found.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
+    <div class="col-lg-6">
+        <div class="card dashboard-card h-100">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3 text-danger">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Nutrition Alerts
+                </h5>
+                {% if urgent_alerts %}
+                    <ul class="list-group list-group-flush">
+                        {% for assessment in urgent_alerts %}
+                            <li class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ assessment.resident.first_name }} {{ assessment.resident.last_name }}</strong>
+                                        <div class="text-muted small">{{ assessment.nutritional_status }} • {{ assessment.assessment_date }}</div>
+                                    </div>
+                                    <span class="badge bg-danger-subtle text-danger">Alert</span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">No urgent nutrition alerts at the moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
+
+
 
 {% endblock %}

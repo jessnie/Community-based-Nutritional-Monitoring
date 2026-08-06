@@ -69,23 +69,29 @@
     <td>
 
     <a href="{% url 'view_resident' resident.id %}"
-       class="btn btn-info btn-sm">
+       class="btn btn-info btn-sm"
+       aria-label="View resident"
+       title="View">
 
-        <i class="bi bi-eye-fill"></i> View
+        <i class="bi bi-eye-fill" aria-hidden="true"></i>
 
     </a>
 
     <a href="{% url 'edit_resident' resident.id %}"
-       class="btn btn-warning btn-sm">
+       class="btn btn-warning btn-sm"
+       aria-label="Edit resident"
+       title="Edit">
 
-        <i class="bi bi-pencil-square"></i> Edit
+        <i class="bi bi-pencil-square" aria-hidden="true"></i>
 
     </a>
 
     <a href="{% url 'delete_resident' resident.id %}"
-       class="btn btn-danger btn-sm">
+       class="btn btn-danger btn-sm"
+       aria-label="Delete resident"
+       title="Delete">
 
-        <i class="bi bi-trash-fill"></i> Delete
+        <i class="bi bi-trash-fill" aria-hidden="true"></i>
 
     </a>
 
