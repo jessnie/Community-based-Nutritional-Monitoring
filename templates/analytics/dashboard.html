@@ -2,151 +2,966 @@
 
 {% block content %}
 
-<h2 class="mb-4">Analytics Dashboard</h2>
+<style>
+    .analytics-card {
+        border: 0;
+        border-radius: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        height: 100%;
+    }
 
-<!-- SUMMARY CARDS -->
-<div class="row g-3">
+    .summary-number {
+        font-size: 30px;
+        font-weight: bold;
+    }
 
-    <div class="col-md-3">
-        <div class="card shadow-sm text-center">
+    .chart-box {
+        position: relative;
+        height: 300px;
+    }
+</style>
+
+
+<!-- PAGE TITLE -->
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">
+            Analytics Dashboard
+        </h2>
+
+        <p class="text-muted mb-0">
+            Nutritional monitoring and follow-up summary
+        </p>
+    </div>
+
+    <a href="{% url 'followup_list' %}"
+       class="btn btn-success">
+
+        <i class="bi bi-clipboard2-pulse"></i>
+        Follow-Up Monitoring
+
+    </a>
+
+</div>
+
+
+<!-- FIRST SUMMARY ROW -->
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-6 col-xl-3">
+
+        <div class="card analytics-card">
+
             <div class="card-body">
-                <h6>Total Residents</h6>
-                <h3>{{ total_residents }}</h3>
+
+                <div class="text-muted">
+                    Total Residents
+                </div>
+
+                <div class="summary-number text-primary">
+                    {{ total_residents }}
+                </div>
+
+                <small class="text-muted">
+                    Registered residents
+                </small>
+
             </div>
+
         </div>
+
     </div>
 
-    <div class="col-md-3">
-        <div class="card shadow-sm text-center">
+
+    <div class="col-md-6 col-xl-3">
+
+        <div class="card analytics-card">
+
             <div class="card-body">
-                <h6>Total Assessments</h6>
-                <h3>{{ total_assessments }}</h3>
+
+                <div class="text-muted">
+                    Total Assessments
+                </div>
+
+                <div class="summary-number text-success">
+                    {{ total_assessments }}
+                </div>
+
+                <small class="text-muted">
+                    Nutrition assessments
+                </small>
+
             </div>
+
         </div>
+
     </div>
 
-    <div class="col-md-2">
-        <div class="card shadow-sm text-center text-success">
-            <h6>Normal</h6>
-            <h3>{{ normal }}</h3>
+
+    <div class="col-md-6 col-xl-3">
+
+        <div class="card analytics-card">
+
+            <div class="card-body">
+
+                <div class="text-muted">
+                    Needs Follow-Up
+                </div>
+
+                <div class="summary-number text-warning">
+                    {{ needs_followup }}
+                </div>
+
+                <small class="text-muted">
+                    Flagged assessments
+                </small>
+
+            </div>
+
         </div>
+
     </div>
 
-    <div class="col-md-2">
-        <div class="card shadow-sm text-center text-warning">
-            <h6>Underweight</h6>
-            <h3>{{ underweight }}</h3>
-        </div>
-    </div>
 
-    <div class="col-md-2">
-        <div class="card shadow-sm text-center text-danger">
-            <h6>Overweight + Obese</h6>
-            <h3>{{ overweight|add:obese }}</h3>
+    <div class="col-md-6 col-xl-3">
+
+        <div class="card analytics-card">
+
+            <div class="card-body">
+
+                <div class="text-muted">
+                    Follow-Up Records
+                </div>
+
+                <div class="summary-number text-info">
+                    {{ total_followups }}
+                </div>
+
+                <small class="text-muted">
+                    Recorded follow-ups
+                </small>
+
+            </div>
+
         </div>
+
     </div>
 
 </div>
 
-<!-- CHART SECTION -->
-<div class="row mt-4">
 
-    <!-- PIE CHART -->
-    <div class="col-md-6">
-        <div class="card shadow-sm">
+<!-- SECOND SUMMARY ROW -->
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-4">
+
+        <div class="card analytics-card">
+
+            <div class="card-body">
+
+                <h6>
+                    Residents Assessed
+                </h6>
+
+                <h3>
+                    {{ assessed_residents }}
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Coverage: {{ coverage }}%
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="card analytics-card">
+
+            <div class="card-body">
+
+                <h6>
+                    Average BMI
+                </h6>
+
+                <h3>
+                    {{ average_bmi }}
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Based on recorded assessments
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="card analytics-card">
+
+            <div class="card-body">
+
+                <h6>
+                    Routine Monitoring
+                </h6>
+
+                <h3 class="text-success">
+                    {{ routine_monitoring }}
+                </h3>
+
+                <p class="text-muted mb-0">
+                    Current routine-monitoring flags
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- NUTRITION STATUS CARDS -->
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+
+        <div class="card analytics-card text-center">
+
+            <div class="card-body">
+
+                <h6>
+                    Normal
+                </h6>
+
+                <h3 class="text-success">
+                    {{ normal }}
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-3">
+
+        <div class="card analytics-card text-center">
+
+            <div class="card-body">
+
+                <h6>
+                    Underweight
+                </h6>
+
+                <h3 class="text-warning">
+                    {{ underweight }}
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-3">
+
+        <div class="card analytics-card text-center">
+
+            <div class="card-body">
+
+                <h6>
+                    Overweight
+                </h6>
+
+                <h3 class="text-info">
+                    {{ overweight }}
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-3">
+
+        <div class="card analytics-card text-center">
+
+            <div class="card-body">
+
+                <h6>
+                    Obese
+                </h6>
+
+                <h3 class="text-danger">
+                    {{ obese }}
+                </h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- CHART ROW -->
+
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-6">
+
+        <div class="card analytics-card">
+
             <div class="card-header bg-success text-white">
+
                 Nutritional Status Distribution
+
             </div>
+
             <div class="card-body">
-                <canvas id="pieChart"></canvas>
+
+                <div class="chart-box">
+                    <canvas id="statusChart"></canvas>
+                </div>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- BAR CHART -->
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                Monthly Assessments
+
+    <div class="col-lg-6">
+
+        <div class="card analytics-card">
+
+            <div class="card-header bg-warning">
+
+                Monitoring Flag Distribution
+
             </div>
+
             <div class="card-body">
-                <canvas id="barChart"></canvas>
+
+                <div class="chart-box">
+                    <canvas id="monitoringChart"></canvas>
+                </div>
+
             </div>
+
         </div>
+
     </div>
 
 </div>
 
-<!-- LINE CHART -->
-<div class="card mt-4 shadow-sm">
-    <div class="card-header bg-dark text-white">
-        Assessment Trend
+
+<!-- MONTHLY TREND -->
+
+<div class="card analytics-card mb-4">
+
+    <div class="card-header bg-primary text-white">
+
+        Monthly Assessment Trend
+
     </div>
+
     <div class="card-body">
-        <canvas id="lineChart"></canvas>
+
+        <div class="chart-box">
+            <canvas id="monthlyChart"></canvas>
+        </div>
+
     </div>
+
 </div>
 
-<!-- SAFE DATA PASSING (NO ERRORS) -->
-{{ months|json_script:"months-data" }}
-{{ monthly_counts|json_script:"counts-data" }}
 
-<!-- CHART JS -->
+<!-- FOLLOW-UP STATUS -->
+
+<div class="row g-4 mb-4">
+
+    <div class="col-lg-6">
+
+        <div class="card analytics-card">
+
+            <div class="card-header bg-dark text-white">
+
+                Follow-Up Status
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="chart-box">
+                    <canvas id="followupChart"></canvas>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-lg-6">
+
+        <div class="card analytics-card">
+
+            <div class="card-header">
+
+                Follow-Up Summary
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="row text-center">
+
+                    <div class="col-4">
+
+                        <h3 class="text-warning">
+                            {{ pending_followups }}
+                        </h3>
+
+                        <small>
+                            Pending
+                        </small>
+
+                    </div>
+
+
+                    <div class="col-4">
+
+                        <h3 class="text-success">
+                            {{ completed_followups }}
+                        </h3>
+
+                        <small>
+                            Completed
+                        </small>
+
+                    </div>
+
+
+                    <div class="col-4">
+
+                        <h3 class="text-danger">
+                            {{ referral_followups }}
+                        </h3>
+
+                        <small>
+                            For Referral
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- RECENT ASSESSMENTS -->
+
+<div class="card analytics-card mb-4">
+
+    <div class="card-header">
+
+        <strong>
+            Recent Assessments
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+                        <th>Resident</th>
+                        <th>Date</th>
+                        <th>BMI</th>
+                        <th>Status</th>
+                        <th>Monitoring</th>
+                        <th>Assessed By</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for assessment in recent_assessments %}
+
+                    <tr>
+
+                        <td>
+                            {{ assessment.resident.first_name }}
+                            {{ assessment.resident.last_name }}
+                        </td>
+
+                        <td>
+                            {{ assessment.assessment_date }}
+                        </td>
+
+                        <td>
+                            {{ assessment.bmi }}
+                        </td>
+
+                        <td>
+
+                            {% if assessment.nutritional_status == 'Normal' %}
+
+                                <span class="badge bg-success">
+                                    Normal
+                                </span>
+
+                            {% elif assessment.nutritional_status == 'Underweight' %}
+
+                                <span class="badge bg-warning text-dark">
+                                    Underweight
+                                </span>
+
+                            {% elif assessment.nutritional_status == 'Overweight' %}
+
+                                <span class="badge bg-info text-dark">
+                                    Overweight
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger">
+                                    Obese
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if assessment.monitoring_flag == 'Routine Monitoring' %}
+
+                                <span class="badge bg-success">
+                                    Routine Monitoring
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-warning text-dark">
+                                    Needs Follow-up
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if assessment.assessed_by %}
+
+                                {{ assessment.assessed_by.username }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="6"
+                            class="text-center text-muted">
+
+                            No assessment records found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- RECENT FOLLOW UPS -->
+
+<div class="card analytics-card">
+
+    <div class="card-header">
+
+        <strong>
+            Recent Follow-Up Records
+        </strong>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+                        <th>Resident</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th>Next Follow-Up</th>
+                        <th>Recorded By</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for followup in recent_followups %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ followup.assessment.resident.first_name }}
+                            {{ followup.assessment.resident.last_name }}
+
+                        </td>
+
+                        <td>
+                            {{ followup.follow_up_date }}
+                        </td>
+
+                        <td>
+
+                            {% if followup.status == 'Completed' %}
+
+                                <span class="badge bg-success">
+                                    Completed
+                                </span>
+
+                            {% elif followup.status == 'For Referral' %}
+
+                                <span class="badge bg-danger">
+                                    For Referral
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-warning text-dark">
+                                    Pending
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if followup.notes %}
+
+                                {{ followup.notes|truncatechars:60 }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if followup.next_follow_up_date %}
+
+                                {{ followup.next_follow_up_date }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if followup.recorded_by %}
+
+                                {{ followup.recorded_by.username }}
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="6"
+                            class="text-center text-muted">
+
+                            No follow-up records found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- SAFE CHART DATA -->
+
+{{ months|json_script:"months-data" }}
+
+{{ monthly_counts|json_script:"monthly-counts-data" }}
+
+{{ monthly_needs_followup|json_script:"monthly-followup-data" }}
+
+{{ status_chart_data|json_script:"status-chart-data" }}
+
+{{ monitoring_chart_data|json_script:"monitoring-chart-data" }}
+
+{{ followup_chart_data|json_script:"followup-chart-data" }}
+
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
 
-const months = JSON.parse(document.getElementById('months-data').textContent);
-const counts = JSON.parse(document.getElementById('counts-data').textContent);
+document.addEventListener('DOMContentLoaded', function () {
 
-/* PIE CHART */
-new Chart(document.getElementById('pieChart'), {
-    type: 'pie',
-    data: {
-        labels: ['Normal', 'Underweight', 'Overweight', 'Obese'],
-        datasets: [{
-            data: [
-                Number("{{ normal }}"),
-                Number("{{ underweight }}"),
-                Number("{{ overweight }}"),
-                Number("{{ obese }}")
-            ],
-            backgroundColor: [
-                '#198754',
-                '#ffc107',
-                '#fd7e14',
-                '#dc3545'
-            ]
-        }]
-    }
-});
+    const months = JSON.parse(
+        document.getElementById('months-data').textContent
+    );
 
-/* BAR CHART */
-new Chart(document.getElementById('barChart'), {
-    type: 'bar',
-    data: {
-        labels: months,
-        datasets: [{
-            label: 'Assessments',
-            data: counts,
-            backgroundColor: '#0d6efd'
-        }]
-    }
-});
+    const monthlyCounts = JSON.parse(
+        document.getElementById('monthly-counts-data').textContent
+    );
 
-/* LINE CHART */
-new Chart(document.getElementById('lineChart'), {
-    type: 'line',
-    data: {
-        labels: months,
-        datasets: [{
-            label: 'Trend',
-            data: counts,
-            borderColor: '#198754',
-            fill: false,
-            tension: 0.3
-        }]
-    }
+    const monthlyFollowups = JSON.parse(
+        document.getElementById('monthly-followup-data').textContent
+    );
+
+    const statusData = JSON.parse(
+        document.getElementById('status-chart-data').textContent
+    );
+
+    const monitoringData = JSON.parse(
+        document.getElementById('monitoring-chart-data').textContent
+    );
+
+    const followupData = JSON.parse(
+        document.getElementById('followup-chart-data').textContent
+    );
+
+
+    new Chart(
+        document.getElementById('statusChart'),
+        {
+            type: 'pie',
+
+            data: {
+                labels: [
+                    'Normal',
+                    'Underweight',
+                    'Overweight',
+                    'Obese'
+                ],
+
+                datasets: [{
+                    data: statusData,
+
+                    backgroundColor: [
+                        '#198754',
+                        '#ffc107',
+                        '#0dcaf0',
+                        '#dc3545'
+                    ]
+                }]
+            }
+        }
+    );
+
+
+    new Chart(
+        document.getElementById('monitoringChart'),
+        {
+            type: 'doughnut',
+
+            data: {
+                labels: [
+                    'Routine Monitoring',
+                    'Needs Follow-up'
+                ],
+
+                datasets: [{
+                    data: monitoringData,
+
+                    backgroundColor: [
+                        '#198754',
+                        '#ffc107'
+                    ]
+                }]
+            }
+        }
+    );
+
+
+    new Chart(
+        document.getElementById('monthlyChart'),
+        {
+            type: 'line',
+
+            data: {
+                labels: months,
+
+                datasets: [
+                    {
+                        label: 'Total Assessments',
+
+                        data: monthlyCounts,
+
+                        borderColor: '#0d6efd',
+
+                        backgroundColor:
+                            'rgba(13,110,253,0.15)',
+
+                        fill: true,
+
+                        tension: 0.3
+                    },
+
+                    {
+                        label: 'Needs Follow-up',
+
+                        data: monthlyFollowups,
+
+                        borderColor: '#ffc107',
+
+                        backgroundColor:
+                            'rgba(255,193,7,0.15)',
+
+                        fill: true,
+
+                        tension: 0.3
+                    }
+                ]
+            },
+
+            options: {
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }
+    );
+
+
+    new Chart(
+        document.getElementById('followupChart'),
+        {
+            type: 'bar',
+
+            data: {
+                labels: [
+                    'Pending',
+                    'Completed',
+                    'For Referral'
+                ],
+
+                datasets: [{
+                    label: 'Follow-Up Records',
+
+                    data: followupData,
+
+                    backgroundColor: [
+                        '#ffc107',
+                        '#198754',
+                        '#dc3545'
+                    ]
+                }]
+            },
+
+            options: {
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }
+    );
+
 });
 
 </script>

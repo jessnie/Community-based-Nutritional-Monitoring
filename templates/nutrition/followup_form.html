@@ -1,0 +1,163 @@
+{% extends base_template %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-header bg-success text-white">
+
+                <h4 class="mb-0">
+                    <i class="bi bi-clipboard2-pulse"></i>
+                    {{ title }}
+                </h4>
+
+            </div>
+
+            <div class="card-body p-4">
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-bold">
+                            Nutrition Assessment
+                        </label>
+
+                        {{ form.assessment }}
+
+                        {% for error in form.assessment.errors %}
+                            <div class="text-danger small">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label fw-bold">
+                                Follow-Up Date
+                            </label>
+
+                            {{ form.follow_up_date }}
+
+                            {% for error in form.follow_up_date.errors %}
+                                <div class="text-danger small">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label fw-bold">
+                                Follow-Up Status
+                            </label>
+
+                            {{ form.status }}
+
+                            {% for error in form.status.errors %}
+                                <div class="text-danger small">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-bold">
+                            Notes
+                        </label>
+
+                        {{ form.notes }}
+
+                        <div class="form-text">
+                            Record observations, actions taken,
+                            counseling, monitoring, or referral details.
+                        </div>
+
+                        {% for error in form.notes.errors %}
+                            <div class="text-danger small">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="mb-4">
+
+                        <label class="form-label fw-bold">
+                            Next Follow-Up Date
+                        </label>
+
+                        {{ form.next_follow_up_date }}
+
+                        <div class="form-text">
+                            Leave blank if no next follow-up has been scheduled.
+                        </div>
+
+                        {% for error in form.next_follow_up_date.errors %}
+                            <div class="text-danger small">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                    </div>
+
+
+                    <div class="d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-success">
+
+                            <i class="bi bi-check-circle"></i>
+                            Save Follow-Up
+
+                        </button>
+
+
+                        <a href="{% url 'followup_list' %}"
+                           class="btn btn-secondary">
+
+                            Cancel
+
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

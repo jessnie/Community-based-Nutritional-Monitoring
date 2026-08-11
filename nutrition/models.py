@@ -1,8 +1,10 @@
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
+
 from residents.models import Resident
 
-
-class NutritionAssessment(models.Model):
+class NutritionRule(models.Model):
 
     STATUS_CHOICES = [
         ('Underweight', 'Underweight'),
@@ -11,10 +13,92 @@ class NutritionAssessment(models.Model):
         ('Obese', 'Obese'),
     ]
 
+    MONITORING_FLAG_CHOICES = [
+        ('Routine Monitoring', 'Routine Monitoring'),
+        ('Needs Follow-up', 'Needs Follow-up'),
+    ]
+
+    status_name = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        unique=True
+    )
+
+    bmi_min = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    bmi_max = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    monitoring_flag = models.CharField(
+        max_length=30,
+        choices=MONITORING_FLAG_CHOICES
+    )
+
+    is_active = models.BooleanField(
+        default=True
+    )
+
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='approved_nutrition_rules'
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    def __str__(self):
+        return self.status_name
+    
+class NutritionAssessment(models.Model):
+
+    STATUS_CHOICES = [
+        ('Underweight', 'Underweight'),
+        ('Normal', 'Normal'),
+        ('Overweight', 'Overweight'),
+        ('Obese', 'Obese'),
+    ]
+    MONITORING_FLAG_CHOICES = [
+    ('Routine Monitoring', 'Routine Monitoring'),
+    ('Needs Follow-up', 'Needs Follow-up'),
+    ]
+
     resident = models.ForeignKey(
         Resident,
         on_delete=models.CASCADE,
         related_name='assessments'
+    )
+
+    assessed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='nutrition_assessments'
+    )
+
+    rule = models.ForeignKey(
+    NutritionRule,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name='assessments'
     )
 
     assessment_date = models.DateField()
@@ -43,6 +127,13 @@ class NutritionAssessment(models.Model):
         editable=False
     )
 
+    monitoring_flag = models.CharField(
+    max_length=30,
+    choices=MONITORING_FLAG_CHOICES,
+    editable=False,
+    default='Routine Monitoring'
+    )
+
     remarks = models.TextField(
         editable=False,
         blank=True,
@@ -56,6 +147,9 @@ class NutritionAssessment(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
 
     def save(self, *args, **kwargs):
 
@@ -359,8 +453,91 @@ class NutritionAssessment(models.Model):
                     "• Weight management\n"
                     "• Regular health monitoring"
                 )
+        # -------------------------
+        # Monitoring Flag & Rule
+        # -------------------------
+
+        matching_rule = NutritionRule.objects.filter(
+            status_name=self.nutritional_status,
+            is_active=True
+        ).first()
+
+        if matching_rule:
+            self.rule = matching_rule
+            self.monitoring_flag = matching_rule.monitoring_flag
+
+        else:
+            self.rule = None
+
+            if self.nutritional_status == "Normal":
+                self.monitoring_flag = "Routine Monitoring"
+            else:
+                self.monitoring_flag = "Needs Follow-up"
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.resident} - {self.assessment_date}"
+
+
+class FollowUpRecord(models.Model):
+
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+        ('For Referral', 'For Referral'),
+    ]
+
+    assessment = models.ForeignKey(
+        NutritionAssessment,
+        on_delete=models.CASCADE,
+        related_name='follow_ups'
+    )
+
+    recorded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='follow_up_records'
+    )
+
+    follow_up_date = models.DateField(
+        default=timezone.localdate
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='Pending'
+    )
+
+    notes = models.TextField(
+        blank=True,
+        default=''
+    )
+
+    next_follow_up_date = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = [
+            '-follow_up_date',
+            '-created_at'
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.assessment.resident} - "
+            f"{self.follow_up_date}"
+        )

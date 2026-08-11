@@ -1,8 +1,9 @@
 from django.urls import path
 from . import views
 
-urlpatterns = [
 
+urlpatterns = [
+    # Nutrition Assessment
     path(
         '',
         views.assessment_list,
@@ -13,12 +14,6 @@ urlpatterns = [
         'add/',
         views.add_assessment,
         name='add_assessment'
-    ),
-
-    path(
-        'add/<int:resident_id>/',
-        views.add_assessment,
-        name='add_assessment_resident'
     ),
 
     path(
@@ -33,4 +28,28 @@ urlpatterns = [
         name='delete_assessment'
     ),
 
+    # Follow-Up Monitoring
+    path(
+        'follow-ups/',
+        views.followup_list,
+        name='followup_list'
+    ),
+
+    path(
+        'follow-ups/add/',
+        views.add_followup,
+        name='add_followup'
+    ),
+
+    path(
+        'follow-ups/edit/<int:pk>/',
+        views.edit_followup,
+        name='edit_followup'
+    ),
+
+    path(
+        'follow-ups/delete/<int:pk>/',
+        views.delete_followup,
+        name='delete_followup'
+    ),
 ]

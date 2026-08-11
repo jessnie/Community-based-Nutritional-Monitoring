@@ -15,6 +15,7 @@ def get_template(request, staff_template, admin_template):
     """
     if request.user.is_superuser:
         return admin_template
+
     return staff_template
 
 
@@ -23,9 +24,12 @@ def resident_list(request):
 
     search = request.GET.get('search', '')
 
-    residents = Resident.objects.all()
+    residents = Resident.objects.select_related(
+        'created_by'
+    ).all()
 
     if search:
+
         residents = residents.filter(
             Q(resident_id__icontains=search) |
             Q(first_name__icontains=search) |
@@ -34,11 +38,16 @@ def resident_list(request):
             Q(address__icontains=search)
         )
 
-    paginator = Paginator(residents, 10)
+    paginator = Paginator(
+        residents,
+        10
+    )
 
     page_number = request.GET.get('page')
 
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator.get_page(
+        page_number
+    )
 
     context = {
         'page_obj': page_obj,
@@ -61,15 +70,28 @@ def add_resident(request):
 
     if request.method == 'POST':
 
-        form = ResidentForm(request.POST)
+        form = ResidentForm(
+            request.POST
+        )
 
         if form.is_valid():
 
-            resident = form.save()
+            resident = form.save(
+                commit=False
+            )
+
+            # Automatically record who created the resident
+            resident.created_by = request.user
+
+            resident.save()
 
             ActivityLog.objects.create(
                 user=request.user,
-                role="Admin" if request.user.is_superuser else "Staff",
+                role=(
+                    "Admin"
+                    if request.user.is_superuser
+                    else "Staff"
+                ),
                 action="Add Resident",
                 description=(
                     f"Added resident "
@@ -79,13 +101,9 @@ def add_resident(request):
                 )
             )
 
-            return redirect('resident_list')
-
-        else:
-
-            print("=================================")
-            print(form.errors)
-            print("=================================")
+            return redirect(
+                'resident_list'
+            )
 
     else:
 
@@ -110,7 +128,10 @@ def add_resident(request):
 @login_required(login_url='login')
 def edit_resident(request, pk):
 
-    resident = get_object_or_404(Resident, pk=pk)
+    resident = get_object_or_404(
+        Resident,
+        pk=pk
+    )
 
     if request.method == 'POST':
 
@@ -121,23 +142,40 @@ def edit_resident(request, pk):
 
         if form.is_valid():
 
-            resident = form.save()
+            resident = form.save(
+                commit=False
+            )
+
+            # Old records may not have created_by
+            if resident.created_by_id is None:
+                resident.created_by = request.user
+
+            resident.save()
 
             ActivityLog.objects.create(
                 user=request.user,
-                role="Admin" if request.user.is_superuser else "Staff",
+                role=(
+                    "Admin"
+                    if request.user.is_superuser
+                    else "Staff"
+                ),
                 action="Edit Resident",
                 description=(
                     f"Updated resident "
-                    f"{resident.first_name} {resident.last_name}"
+                    f"{resident.first_name} "
+                    f"{resident.last_name}"
                 )
             )
 
-            return redirect('resident_list')
+            return redirect(
+                'resident_list'
+            )
 
     else:
 
-        form = ResidentForm(instance=resident)
+        form = ResidentForm(
+            instance=resident
+        )
 
     context = {
         'form': form,
@@ -172,16 +210,23 @@ def delete_resident(request, pk):
 
         ActivityLog.objects.create(
             user=request.user,
-            role="Admin" if request.user.is_superuser else "Staff",
+            role=(
+                "Admin"
+                if request.user.is_superuser
+                else "Staff"
+            ),
             action="Delete Resident",
             description=(
-                f"Deleted resident {resident_name}"
+                f"Deleted resident "
+                f"{resident_name}"
             )
         )
 
         resident.delete()
 
-        return redirect('resident_list')
+        return redirect(
+            'resident_list'
+        )
 
     return render(
         request,
@@ -200,14 +245,28 @@ def delete_resident(request, pk):
 def view_resident(request, pk):
 
     resident = get_object_or_404(
-        Resident,
+        Resident.objects.select_related(
+            'created_by'
+        ),
         pk=pk
     )
 
-    assessments = NutritionAssessment.objects.filter(
-        resident=resident
-    ).order_by(
-        '-assessment_date'
+    assessments = (
+        NutritionAssessment.objects
+        .filter(
+            resident=resident
+        )
+        .select_related(
+            'assessed_by',
+            'rule'
+        )
+        .prefetch_related(
+            'follow_ups__recorded_by'
+        )
+        .order_by(
+            '-assessment_date',
+            '-created_at'
+        )
     )
 
     context = {

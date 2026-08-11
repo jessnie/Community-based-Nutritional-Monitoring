@@ -6,9 +6,12 @@
 
     <div class="card-header bg-success text-white">
 
-        <h4>Resident Profile</h4>
+        <h4 class="mb-0">
+            Resident Profile
+        </h4>
 
     </div>
+
 
     <div class="card-body">
 
@@ -16,23 +19,84 @@
 
             <div class="col-md-6">
 
-                <p><strong>Resident ID:</strong> {{ resident.resident_id }}</p>
+                <p>
+                    <strong>Resident ID:</strong>
+                    {{ resident.resident_id }}
+                </p>
 
-                <p><strong>Full Name:</strong> {{ resident.first_name }} {{ resident.last_name }}</p>
+                <p>
+                    <strong>Full Name:</strong>
 
-                <p><strong>Sex:</strong> {{ resident.sex }}</p>
+                    {{ resident.first_name }}
 
-                <p><strong>Date of Birth:</strong> {{ resident.birth_date }}</p>
+                    {% if resident.middle_name %}
+                        {{ resident.middle_name }}
+                    {% endif %}
+
+                    {{ resident.last_name }}
+                </p>
+
+                <p>
+                    <strong>Sex:</strong>
+                    {{ resident.sex }}
+                </p>
+
+                <p>
+                    <strong>Date of Birth:</strong>
+                    {{ resident.birth_date }}
+                </p>
+
+                <p>
+                    <strong>Age:</strong>
+                    {{ resident.age }}
+                </p>
 
             </div>
 
+
             <div class="col-md-6">
 
-                <p><strong>zone:</strong> {{ resident.address }}</p>
+                <p>
+                    <strong>Address:</strong>
+                    {{ resident.address }}
+                </p>
 
-                <p><strong>Contact Number:</strong> {{ resident.contact_number }}</p>
+                <p>
+                    <strong>Contact Number:</strong>
 
-                <p><strong>Guardian:</strong> {{ resident.guardian_name }}</p>
+                    {% if resident.contact_number %}
+                        {{ resident.contact_number }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </p>
+
+                <p>
+                    <strong>Guardian:</strong>
+
+                    {% if resident.guardian_name %}
+                        {{ resident.guardian_name }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </p>
+
+                <p>
+                    <strong>Record Created By:</strong>
+
+                    {% if resident.created_by %}
+
+                        {{ resident.created_by.username }}
+
+                    {% else %}
+
+                        <span class="text-muted">
+                            Not recorded
+                        </span>
+
+                    {% endif %}
+
+                </p>
 
             </div>
 
@@ -42,102 +106,321 @@
 
 </div>
 
+
+
 <div class="card shadow-sm">
 
     <div class="card-header bg-primary text-white">
 
-        <h5>Nutrition Assessment History</h5>
+        <h5 class="mb-0">
+            Nutrition Assessment & Monitoring History
+        </h5>
 
     </div>
 
+
     <div class="card-body">
 
-        <table class="table table-bordered table-hover">
+        <div class="table-responsive">
 
-            <thead class="table-light">
+            <table class="table table-bordered table-hover align-middle">
 
-                <tr>
+                <thead class="table-light">
 
-                    <th>Date</th>
-                    <th>Height (cm)</th>
-                    <th>Weight (kg)</th>
-                    <th>BMI</th>
-                    <th>Status</th>
-                    <th>Remarks</th>
-                    <th>Intervention</th>
+                    <tr>
 
-                </tr>
+                        <th>Date</th>
 
-            </thead>
+                        <th>Measurements</th>
 
-            <tbody>
+                        <th>BMI</th>
 
-                {% for assessment in assessments %}
+                        <th>Status</th>
 
-                <tr>
+                        <th>Monitoring</th>
 
-                    <td>{{ assessment.assessment_date }}</td>
+                        <th>Rule</th>
 
-                    <td>{{ assessment.height }}</td>
+                        <th>Assessed By</th>
 
-                    <td>{{ assessment.weight }}</td>
+                        <th>Remarks / Intervention</th>
 
-                    <td>{{ assessment.bmi }}</td>
+                        <th>Follow-Up Records</th>
 
-                    <td>
+                    </tr>
 
-                        {% if assessment.nutritional_status == "Normal" %}
+                </thead>
 
-                            <span class="badge bg-success">
-                                {{ assessment.nutritional_status }}
-                            </span>
 
-                        {% elif assessment.nutritional_status == "Underweight" %}
+                <tbody>
 
-                            <span class="badge bg-warning text-dark">
-                                {{ assessment.nutritional_status }}
-                            </span>
+                    {% for assessment in assessments %}
 
-                        {% elif assessment.nutritional_status == "Overweight" %}
+                    <tr>
 
-                            <span class="badge bg-info text-dark">
-                                {{ assessment.nutritional_status }}
-                            </span>
+                        <td>
+                            {{ assessment.assessment_date }}
+                        </td>
 
-                        {% else %}
 
-                            <span class="badge bg-danger">
-                                {{ assessment.nutritional_status }}
-                            </span>
+                        <td>
 
-                        {% endif %}
+                            <strong>Height:</strong>
+                            {{ assessment.height }} cm
 
-                    </td>
+                            <br>
 
-                    <td>{{ assessment.remarks }}</td>
-                    <td>{{ assessment.intervention }}</td>
+                            <strong>Weight:</strong>
+                            {{ assessment.weight }} kg
 
-                </tr>
+                        </td>
 
-                {% empty %}
 
-                <tr>
+                        <td>
 
-                    <td colspan="7" class="text-center">
+                            <strong>
+                                {{ assessment.bmi }}
+                            </strong>
 
-                        No nutrition assessments found.
+                        </td>
 
-                    </td>
 
-                </tr>
+                        <td>
 
-                {% endfor %}
+                            {% if assessment.nutritional_status == "Normal" %}
 
-            </tbody>
+                                <span class="badge bg-success">
 
-        </table>
+                                    {{ assessment.nutritional_status }}
 
-        <a href="{% url 'resident_list' %}" class="btn btn-secondary">
+                                </span>
+
+                            {% elif assessment.nutritional_status == "Underweight" %}
+
+                                <span class="badge bg-warning text-dark">
+
+                                    {{ assessment.nutritional_status }}
+
+                                </span>
+
+                            {% elif assessment.nutritional_status == "Overweight" %}
+
+                                <span class="badge bg-info text-dark">
+
+                                    {{ assessment.nutritional_status }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    {{ assessment.nutritional_status }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if assessment.monitoring_flag == "Routine Monitoring" %}
+
+                                <span class="badge bg-success">
+
+                                    {{ assessment.monitoring_flag }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-warning text-dark">
+
+                                    {{ assessment.monitoring_flag }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if assessment.rule %}
+
+                                {{ assessment.rule.status_name }}
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    No rule
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if assessment.assessed_by %}
+
+                                {{ assessment.assessed_by.username }}
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    Not recorded
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td style="min-width: 280px;">
+
+                            <strong>Remarks:</strong>
+
+                            <br>
+
+                            {{ assessment.remarks }}
+
+                            <hr class="my-2">
+
+                            <strong>Intervention:</strong>
+
+                            <div style="white-space: pre-line;">
+                                {{ assessment.intervention }}
+                            </div>
+
+                        </td>
+
+
+                        <td style="min-width: 240px;">
+
+                            {% for followup in assessment.follow_ups.all %}
+
+                                <div class="border rounded p-2 mb-2">
+
+                                    <strong>
+                                        {{ followup.follow_up_date }}
+                                    </strong>
+
+                                    <br>
+
+                                    {% if followup.status == "Completed" %}
+
+                                        <span class="badge bg-success">
+
+                                            {{ followup.status }}
+
+                                        </span>
+
+                                    {% elif followup.status == "For Referral" %}
+
+                                        <span class="badge bg-danger">
+
+                                            {{ followup.status }}
+
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-warning text-dark">
+
+                                            {{ followup.status }}
+
+                                        </span>
+
+                                    {% endif %}
+
+
+                                    {% if followup.recorded_by %}
+
+                                        <br>
+
+                                        <small class="text-muted">
+
+                                            Recorded by:
+                                            {{ followup.recorded_by.username }}
+
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if followup.notes %}
+
+                                        <br>
+
+                                        <small>
+                                            {{ followup.notes }}
+                                        </small>
+
+                                    {% endif %}
+
+
+                                    {% if followup.next_follow_up_date %}
+
+                                        <br>
+
+                                        <small>
+
+                                            <strong>
+                                                Next:
+                                            </strong>
+
+                                            {{ followup.next_follow_up_date }}
+
+                                        </small>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% empty %}
+
+                                <span class="text-muted">
+
+                                    No follow-up record
+
+                                </span>
+
+                            {% endfor %}
+
+                        </td>
+
+                    </tr>
+
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="9"
+                            class="text-center">
+
+                            No nutrition assessments found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <a href="{% url 'resident_list' %}"
+           class="btn btn-secondary">
 
             Back to Residents
 

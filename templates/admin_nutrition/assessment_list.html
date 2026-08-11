@@ -8,138 +8,261 @@
         Nutrition Assessment Management
     </h3>
 
+
+    <a href="{% url 'followup_list' %}"
+       class="btn btn-primary">
+
+        <i class="bi bi-clipboard2-pulse"></i>
+
+        Follow-Up Monitoring
+
+    </a>
+
 </div>
+
 
 <div class="card shadow-sm border-0">
 
     <div class="card-body">
 
-        <table class="table table-hover align-middle">
+        <div class="table-responsive">
 
-            <thead class="table-success">
+            <table class="table table-hover align-middle">
 
-                <tr>
+                <thead class="table-success">
 
-                    <th>Resident</th>
-                    <th>Date</th>
-                    <th>Height (cm)</th>
-                    <th>Weight (kg)</th>
-                    <th>BMI</th>
-                    <th>Status</th>
-                    <th width="180">Actions</th>
+                    <tr>
 
-                </tr>
+                        <th>Resident</th>
 
-            </thead>
+                        <th>Date</th>
 
-            <tbody>
+                        <th>Measurements</th>
 
-                {% for assessment in assessments %}
+                        <th>BMI</th>
 
-                <tr>
+                        <th>Status</th>
 
-                    <td>
+                        <th>Monitoring Flag</th>
 
-                        {{ assessment.resident.first_name }}
-                        {{ assessment.resident.last_name }}
+                        <th>Rule Applied</th>
 
-                    </td>
+                        <th>Assessed By</th>
 
-                    <td>
+                        <th width="210">
+                            Actions
+                        </th>
 
-                        {{ assessment.assessment_date }}
+                    </tr>
 
-                    </td>
+                </thead>
 
-                    <td>
 
-                        {{ assessment.height }}
+                <tbody>
 
-                    </td>
+                    {% for assessment in assessments %}
 
-                    <td>
+                    <tr>
 
-                        {{ assessment.weight }}
+                        <td>
 
-                    </td>
+                            <strong>
 
-                    <td>
+                                {{ assessment.resident.first_name }}
+                                {{ assessment.resident.last_name }}
 
-                        {{ assessment.bmi }}
+                            </strong>
 
-                    </td>
+                            <br>
 
-                    <td>
+                            <small class="text-muted">
 
-                        {% if assessment.nutritional_status == "Normal" %}
+                                {{ assessment.resident.resident_id }}
 
-                            <span class="badge bg-success">
-                                {{ assessment.nutritional_status }}
-                            </span>
+                            </small>
 
-                        {% elif assessment.nutritional_status == "Underweight" %}
+                        </td>
 
-                            <span class="badge bg-warning text-dark">
-                                {{ assessment.nutritional_status }}
-                            </span>
 
-                        {% elif assessment.nutritional_status == "Overweight" %}
+                        <td>
+                            {{ assessment.assessment_date }}
+                        </td>
 
-                            <span class="badge bg-info">
-                                {{ assessment.nutritional_status }}
-                            </span>
 
-                        {% else %}
+                        <td>
 
-                            <span class="badge bg-danger">
-                                {{ assessment.nutritional_status }}
-                            </span>
+                            <strong>Height:</strong>
+                            {{ assessment.height }} cm
 
-                        {% endif %}
+                            <br>
 
-                    </td>
+                            <strong>Weight:</strong>
+                            {{ assessment.weight }} kg
 
-                    <td>
+                        </td>
 
-                        <a href="{% url 'edit_assessment' assessment.id %}"
-                           class="btn btn-warning btn-sm"
-                           aria-label="Edit assessment"
-                           title="Edit">
 
-                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                        <td>
 
-                        </a>
+                            <strong>
+                                {{ assessment.bmi }}
+                            </strong>
 
-                        <a href="{% url 'delete_assessment' assessment.id %}"
-                           class="btn btn-danger btn-sm"
-                           aria-label="Delete assessment"
-                           title="Delete">
+                        </td>
 
-                            <i class="bi bi-trash" aria-hidden="true"></i>
 
-                        </a>
+                        <td>
 
-                    </td>
+                            {% if assessment.nutritional_status == "Normal" %}
 
-                </tr>
+                                <span class="badge bg-success">
 
-                {% empty %}
+                                    {{ assessment.nutritional_status }}
 
-                <tr>
+                                </span>
 
-                    <td colspan="7" class="text-center">
+                            {% elif assessment.nutritional_status == "Underweight" %}
 
-                        No nutrition assessments found.
+                                <span class="badge bg-warning text-dark">
 
-                    </td>
+                                    {{ assessment.nutritional_status }}
 
-                </tr>
+                                </span>
 
-                {% endfor %}
+                            {% elif assessment.nutritional_status == "Overweight" %}
 
-            </tbody>
+                                <span class="badge bg-info text-dark">
 
-        </table>
+                                    {{ assessment.nutritional_status }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger">
+
+                                    {{ assessment.nutritional_status }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if assessment.monitoring_flag == "Routine Monitoring" %}
+
+                                <span class="badge bg-success">
+
+                                    {{ assessment.monitoring_flag }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-warning text-dark">
+
+                                    {{ assessment.monitoring_flag }}
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if assessment.rule %}
+
+                                {{ assessment.rule.status_name }}
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    No rule
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if assessment.assessed_by %}
+
+                                {{ assessment.assessed_by.username }}
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    Not recorded
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <a href="{% url 'add_followup' %}?assessment={{ assessment.id }}"
+                               class="btn btn-primary btn-sm mb-1">
+
+                                <i class="bi bi-clipboard-plus"></i>
+
+                                Follow-Up
+
+                            </a>
+
+
+                            <a href="{% url 'edit_assessment' assessment.id %}"
+                               class="btn btn-warning btn-sm mb-1">
+
+                                <i class="bi bi-pencil"></i>
+
+                                Edit
+
+                            </a>
+
+
+                            <a href="{% url 'delete_assessment' assessment.id %}"
+                               class="btn btn-danger btn-sm mb-1">
+
+                                <i class="bi bi-trash"></i>
+
+                                Delete
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+
+                    {% empty %}
+
+                    <tr>
+
+                        <td colspan="9"
+                            class="text-center">
+
+                            No nutrition assessments found.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
 
     </div>
 

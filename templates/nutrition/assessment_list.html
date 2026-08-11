@@ -2,29 +2,38 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h3>
+        Nutrition Assessment
+    </h3>
+
 
     <div>
 
-        <h3 class="fw-bold">
-            Nutrition Monitoring
-        </h3>
+        <a href="{% url 'followup_list' %}"
+           class="btn btn-primary">
 
-        <p class="text-muted mb-0">
-            Displays the latest nutrition assessment and intervention of every resident.
-        </p>
+            <i class="bi bi-clipboard2-pulse"></i>
+
+            Follow-Up Monitoring
+
+        </a>
+
+
+        <a href="{% url 'add_assessment' %}"
+           class="btn btn-success">
+
+            <i class="bi bi-plus-circle"></i>
+
+            Add Assessment
+
+        </a>
 
     </div>
 
-    <a href="{% url 'add_assessment' %}" class="btn btn-success">
-
-        <i class="bi bi-plus-circle"></i>
-
-        New Assessment
-
-    </a>
-
 </div>
+
 
 <div class="card shadow-sm border-0">
 
@@ -32,7 +41,7 @@
 
         <div class="table-responsive">
 
-            <table class="table table-hover align-middle">
+            <table class="table table-bordered table-hover align-middle">
 
                 <thead class="table-success">
 
@@ -40,23 +49,30 @@
 
                         <th>Resident</th>
 
-                        <th>Age</th>
-
-                        <th>Category</th>
-
                         <th>Date</th>
+
+                        <th>Measurements</th>
 
                         <th>BMI</th>
 
                         <th>Status</th>
 
-                        <th>Intervention</th>
+                        <th>Monitoring Flag</th>
 
-                        <th width="180">Actions</th>
+                        <th>Rule Applied</th>
+
+                        <th>Assessed By</th>
+
+                        <th>Remarks / Intervention</th>
+
+                        <th width="210">
+                            Actions
+                        </th>
 
                     </tr>
 
                 </thead>
+
 
                 <tbody>
 
@@ -73,39 +89,43 @@
 
                             </strong>
 
-                        </td>
+                            <br>
 
-                        <td>
+                            <small class="text-muted">
 
-                            {{ assessment.resident.age }}
+                                {{ assessment.resident.resident_id }}
 
-                        </td>
-
-                        <td>
-
-                            <span class="badge bg-secondary">
-
-                                {{ assessment.resident.age_category }}
-
-                            </span>
+                            </small>
 
                         </td>
 
-                        <td>
 
+                        <td>
                             {{ assessment.assessment_date }}
+                        </td>
+
+
+                        <td>
+
+                            <strong>Height:</strong>
+                            {{ assessment.height }} cm
+
+                            <br>
+
+                            <strong>Weight:</strong>
+                            {{ assessment.weight }} kg
 
                         </td>
+
 
                         <td>
 
                             <strong>
-
                                 {{ assessment.bmi }}
-
                             </strong>
 
                         </td>
+
 
                         <td>
 
@@ -145,29 +165,115 @@
 
                         </td>
 
+
                         <td>
 
-                            {{ assessment.intervention }}
+                            {% if assessment.monitoring_flag == "Routine Monitoring" %}
+
+                                <span class="badge bg-success">
+
+                                    {{ assessment.monitoring_flag }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-warning text-dark">
+
+                                    {{ assessment.monitoring_flag }}
+
+                                </span>
+
+                            {% endif %}
 
                         </td>
 
+
                         <td>
 
-                            <a href="{% url 'edit_assessment' assessment.id %}"
-                               class="btn btn-warning btn-sm"
-                               aria-label="Edit assessment"
-                               title="Edit">
+                            {% if assessment.rule %}
 
-                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                <span class="badge bg-secondary">
+
+                                    {{ assessment.rule.status_name }}
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    No rule
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if assessment.assessed_by %}
+
+                                {{ assessment.assessed_by.username }}
+
+                            {% else %}
+
+                                <span class="text-muted">
+                                    Not recorded
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td style="min-width: 280px;">
+
+                            <strong>Remarks:</strong>
+
+                            <br>
+
+                            {{ assessment.remarks }}
+
+                            <hr class="my-2">
+
+                            <strong>Intervention:</strong>
+
+                            <div style="white-space: pre-line;">
+                                {{ assessment.intervention }}
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <a href="{% url 'add_followup' %}?assessment={{ assessment.id }}"
+                               class="btn btn-primary btn-sm mb-1">
+
+                                <i class="bi bi-clipboard-plus"></i>
+
+                                Follow-Up
 
                             </a>
 
-                            <a href="{% url 'delete_assessment' assessment.id %}"
-                               class="btn btn-danger btn-sm"
-                               aria-label="Delete assessment"
-                               title="Delete">
 
-                                <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                            <a href="{% url 'edit_assessment' assessment.id %}"
+                               class="btn btn-warning btn-sm mb-1">
+
+                                <i class="bi bi-pencil-square"></i>
+
+                                Edit
+
+                            </a>
+
+
+                            <a href="{% url 'delete_assessment' assessment.id %}"
+                               class="btn btn-danger btn-sm mb-1">
+
+                                <i class="bi bi-trash-fill"></i>
+
+                                Delete
 
                             </a>
 
@@ -175,13 +281,15 @@
 
                     </tr>
 
+
                     {% empty %}
 
                     <tr>
 
-                        <td colspan="8" class="text-center py-4">
+                        <td colspan="10"
+                            class="text-center">
 
-                            No nutrition monitoring records found.
+                            No assessments found.
 
                         </td>
 

@@ -1,109 +1,141 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from django.db.models import Count, Avg, Max, Min
+from django.db.models import Count, Avg
 from django.db.models.functions import TruncMonth
 
-from nutrition.models import NutritionAssessment
+from nutrition.models import NutritionAssessment, FollowUpRecord
 from residents.models import Resident
 
 
 def get_template(request, staff_template, admin_template):
-    """
-    Return the correct template depending on the logged-in user.
-    """
     if request.user.is_superuser:
         return admin_template
+
     return staff_template
 
 
 @login_required(login_url='login')
 def analytics_dashboard(request):
 
-    # ==========================
-    # NUTRITION STATUS COUNTS
-    # ==========================
+    # ==========================================
+    # BASE QUERYSETS
+    # ==========================================
 
-    normal = NutritionAssessment.objects.filter(
-        nutritional_status='Normal'
-    ).count()
+    assessments = NutritionAssessment.objects.all()
+    residents = Resident.objects.all()
+    followups = FollowUpRecord.objects.all()
 
-    underweight = NutritionAssessment.objects.filter(
-        nutritional_status='Underweight'
-    ).count()
 
-    overweight = NutritionAssessment.objects.filter(
-        nutritional_status='Overweight'
-    ).count()
+    # ==========================================
+    # BASIC COUNTS
+    # ==========================================
 
-    obese = NutritionAssessment.objects.filter(
-        nutritional_status='Obese'
-    ).count()
+    total_residents = residents.count()
+    total_assessments = assessments.count()
+    total_followups = followups.count()
 
-    # ==========================
-    # TOTAL COUNTS
-    # ==========================
 
-    total_residents = Resident.objects.count()
+    # ==========================================
+    # UNIQUE RESIDENTS ASSESSED
+    # ==========================================
 
-    total_assessments = NutritionAssessment.objects.count()
-
-    # ==========================
-    # ADMIN ANALYTICS
-    # ==========================
-
-    male_residents = Resident.objects.filter(
-        sex='Male'
-    ).count()
-
-    female_residents = Resident.objects.filter(
-        sex='Female'
-    ).count()
-
-    intervention = underweight + obese
-
-    average_bmi = NutritionAssessment.objects.aggregate(
-        Avg('bmi')
-    )['bmi__avg'] or 0
-
-    highest_bmi = NutritionAssessment.objects.aggregate(
-        Max('bmi')
-    )['bmi__max'] or 0
-
-    lowest_bmi = NutritionAssessment.objects.aggregate(
-        Min('bmi')
-    )['bmi__min'] or 0
-
-    latest_assessment = NutritionAssessment.objects.order_by(
-        '-assessment_date'
-    ).first()
+    assessed_residents = (
+        assessments
+        .values('resident_id')
+        .distinct()
+        .count()
+    )
 
     coverage = 0
 
     if total_residents > 0:
         coverage = round(
-            (total_assessments / total_residents) * 100,
+            (assessed_residents / total_residents) * 100,
             1
         )
 
-    # ==========================
-    # RECENT ASSESSMENTS
-    # ==========================
 
-    recent_assessments = (
-        NutritionAssessment.objects
-        .select_related('resident')
-        .order_by('-assessment_date')[:5]
+    # ==========================================
+    # NUTRITION STATUS
+    # ==========================================
+
+    normal = assessments.filter(
+        nutritional_status='Normal'
+    ).count()
+
+    underweight = assessments.filter(
+        nutritional_status='Underweight'
+    ).count()
+
+    overweight = assessments.filter(
+        nutritional_status='Overweight'
+    ).count()
+
+    obese = assessments.filter(
+        nutritional_status='Obese'
+    ).count()
+
+
+    # ==========================================
+    # MONITORING FLAGS
+    # ==========================================
+
+    routine_monitoring = assessments.filter(
+        monitoring_flag='Routine Monitoring'
+    ).count()
+
+    needs_followup = assessments.filter(
+        monitoring_flag='Needs Follow-up'
+    ).count()
+
+
+    # ==========================================
+    # FOLLOW-UP STATUS
+    # ==========================================
+
+    pending_followups = followups.filter(
+        status='Pending'
+    ).count()
+
+    completed_followups = followups.filter(
+        status='Completed'
+    ).count()
+
+    referral_followups = followups.filter(
+        status='For Referral'
+    ).count()
+
+
+    # ==========================================
+    # AVERAGE BMI
+    # ==========================================
+
+    average_bmi = assessments.aggregate(
+        Avg('bmi')
+    )['bmi__avg']
+
+    if average_bmi is None:
+        average_bmi = 0
+
+    average_bmi = round(
+        float(average_bmi),
+        2
     )
 
-    # ==========================
-    # MONTHLY CHART DATA
-    # ==========================
+
+    # ==========================================
+    # MONTHLY ASSESSMENTS
+    # ==========================================
 
     monthly_data = (
-        NutritionAssessment.objects
-        .annotate(month=TruncMonth('assessment_date'))
+        assessments
+        .annotate(
+            month=TruncMonth('assessment_date')
+        )
         .values('month')
-        .annotate(total=Count('id'))
+        .annotate(
+            total=Count('id')
+        )
         .order_by('month')
     )
 
@@ -112,58 +144,167 @@ def analytics_dashboard(request):
 
     for item in monthly_data:
 
-        months.append(
-            item['month'].strftime("%b %Y")
+        if item['month']:
+
+            months.append(
+                item['month'].strftime('%b %Y')
+            )
+
+            monthly_counts.append(
+                item['total']
+            )
+
+
+    # ==========================================
+    # MONTHLY NEEDS FOLLOW-UP
+    # ==========================================
+
+    monthly_flag_data = (
+        assessments
+        .filter(
+            monitoring_flag='Needs Follow-up'
+        )
+        .annotate(
+            month=TruncMonth('assessment_date')
+        )
+        .values('month')
+        .annotate(
+            total=Count('id')
+        )
+        .order_by('month')
+    )
+
+    flag_dictionary = {}
+
+    for item in monthly_flag_data:
+
+        if item['month']:
+
+            month_name = item['month'].strftime(
+                '%b %Y'
+            )
+
+            flag_dictionary[month_name] = (
+                item['total']
+            )
+
+    monthly_needs_followup = []
+
+    for month in months:
+
+        monthly_needs_followup.append(
+            flag_dictionary.get(
+                month,
+                0
+            )
         )
 
-        monthly_counts.append(
-            item['total']
-        )
 
-    # ==========================
+    # ==========================================
+    # RECENT ASSESSMENTS
+    # ==========================================
+
+    recent_assessments = (
+        assessments
+        .select_related(
+            'resident',
+            'assessed_by',
+            'rule'
+        )
+        .order_by(
+            '-assessment_date',
+            '-created_at'
+        )[:5]
+    )
+
+
+    # ==========================================
+    # RECENT FOLLOW-UPS
+    # ==========================================
+
+    recent_followups = (
+        followups
+        .select_related(
+            'assessment',
+            'assessment__resident',
+            'recorded_by'
+        )
+        .order_by(
+            '-follow_up_date',
+            '-created_at'
+        )[:5]
+    )
+
+
+    # ==========================================
+    # CHART DATA
+    # ==========================================
+
+    status_chart_data = [
+        normal,
+        underweight,
+        overweight,
+        obese,
+    ]
+
+    monitoring_chart_data = [
+        routine_monitoring,
+        needs_followup,
+    ]
+
+    followup_chart_data = [
+        pending_followups,
+        completed_followups,
+        referral_followups,
+    ]
+
+
+    # ==========================================
     # CONTEXT
-    # ==========================
+    # ==========================================
 
     context = {
+
+        'total_residents': total_residents,
+        'total_assessments': total_assessments,
+        'total_followups': total_followups,
+
+        'assessed_residents': assessed_residents,
+        'coverage': coverage,
 
         'normal': normal,
         'underweight': underweight,
         'overweight': overweight,
         'obese': obese,
 
-        'total_residents': total_residents,
-        'total_assessments': total_assessments,
+        'routine_monitoring': routine_monitoring,
+        'needs_followup': needs_followup,
 
-        'male_residents': male_residents,
-        'female_residents': female_residents,
+        'pending_followups': pending_followups,
+        'completed_followups': completed_followups,
+        'referral_followups': referral_followups,
 
-        'intervention': intervention,
-
-        'average_bmi': round(average_bmi, 2),
-        'highest_bmi': highest_bmi,
-        'lowest_bmi': lowest_bmi,
-
-        'coverage': coverage,
-
-        'latest_assessment': latest_assessment,
+        'average_bmi': average_bmi,
 
         'recent_assessments': recent_assessments,
+        'recent_followups': recent_followups,
 
         'months': months,
         'monthly_counts': monthly_counts,
+        'monthly_needs_followup': monthly_needs_followup,
 
+        'status_chart_data': status_chart_data,
+        'monitoring_chart_data': monitoring_chart_data,
+        'followup_chart_data': followup_chart_data,
     }
 
+
     return render(
-
         request,
-
         get_template(
             request,
             'analytics/dashboard.html',
             'admin_analytics/dashboard.html'
         ),
-
         context
-
     )

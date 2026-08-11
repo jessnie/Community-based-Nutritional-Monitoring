@@ -1,6 +1,6 @@
+from django.conf import settings
 from django.db import models
 from datetime import date
-
 
 class Resident(models.Model):
 
@@ -48,6 +48,13 @@ class Resident(models.Model):
         blank=True,
         null=True
     )
+
+    created_by = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name='created_residents')
 
     created_at = models.DateTimeField(auto_now_add=True)
 
