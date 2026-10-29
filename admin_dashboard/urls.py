@@ -9,5 +9,10 @@ urlpatterns = [
         views.admin_dashboard,
         name='admin_dashboard'
     ),
+    path(
+        'archived-records/',
+        views.archived_records,
+        name='archived_records'
+    ),
 
 ]

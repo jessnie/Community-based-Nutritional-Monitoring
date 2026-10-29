@@ -37,15 +37,16 @@
 
         </a>
 
+        {% if not user.is_superuser %}
+            <a href="{% url 'add_followup' %}"
+               class="btn btn-success">
 
-        <a href="{% url 'add_followup' %}"
-           class="btn btn-success">
+                <i class="bi bi-plus-circle"></i>
 
-            <i class="bi bi-plus-circle"></i>
+                Add Follow-Up
 
-            Add Follow-Up
-
-        </a>
+            </a>
+        {% endif %}
 
     </div>
 
@@ -442,23 +443,27 @@
 
                         <td>
 
+                            {% if not user.is_superuser %}
                             <a href="{% url 'edit_followup' followup.id %}"
-                               class="btn btn-warning btn-sm mb-1">
+                               class="btn btn-warning btn-sm mb-1"
+                               aria-label="Edit follow-up"
+                               title="Edit follow-up">
+                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                            </a>
+                            {% endif %}
 
-                                <i class="bi bi-pencil"></i>
-
-                                Edit
-
+                            <a href="{% url 'delete_followup' followup.id %}?action=archive"
+                               class="btn btn-warning btn-sm mb-1"
+                               aria-label="Archive follow-up"
+                               title="Archive follow-up">
+                                <i class="bi bi-archive-fill" aria-hidden="true"></i>
                             </a>
 
-
-                            <a href="{% url 'delete_followup' followup.id %}"
-                               class="btn btn-danger btn-sm mb-1">
-
-                                <i class="bi bi-trash"></i>
-
-                                Delete
-
+                            <a href="{% url 'delete_followup' followup.id %}?action=delete"
+                               class="btn btn-danger btn-sm mb-1"
+                               aria-label="Permanently delete follow-up"
+                               title="Permanently delete follow-up">
+                                <i class="bi bi-trash-fill" aria-hidden="true"></i>
                             </a>
 
                         </td>

@@ -100,26 +100,24 @@
 
                 <a href="{% url 'edit_user' user.id %}"
 
-                   class="btn btn-warning btn-sm">
-
-                    <i class="bi bi-pencil-square"></i>
-
-                    Edit
-
+                   class="btn btn-warning btn-sm"
+                   aria-label="Edit user"
+                   title="Edit user">
+                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
                 </a>
 
-                {% if not user.is_superuser %}
+                {% if user.pk != request.user.pk %}
+                    {% if not user.is_superuser or admin_count > 1 %}
 
                 <a href="{% url 'delete_user' user.id %}"
 
-                   class="btn btn-danger btn-sm">
-
-                    <i class="bi bi-trash-fill"></i>
-
-                    Delete
-
+                   class="btn btn-danger btn-sm"
+                   aria-label="Delete user"
+                   title="Delete user">
+                    <i class="bi bi-trash-fill" aria-hidden="true"></i>
                 </a>
 
+                    {% endif %}
                 {% endif %}
 
             </td>

@@ -8,6 +8,11 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
+    <script>
+        document.documentElement.dataset.theme =
+            localStorage.getItem("cnms-theme") || "light";
+    </script>
+
     <title>
         Community-Based Nutritional Monitoring and Decision Support System
     </title>
@@ -28,6 +33,17 @@
 
 <style>
 
+:root{
+    --bs-primary:#2F6F73;
+    --bs-primary-rgb:47,111,115;
+    --bs-success:#2F6F73;
+    --bs-success-rgb:47,111,115;
+    --bs-success-bg-subtle:#E3F0EF;
+    --bs-success-border-subtle:#C7DFDD;
+    --bs-success-text-emphasis:#275B5F;
+    --cnms-accent:#E7A857;
+}
+
 
 *{
 
@@ -43,12 +59,137 @@
 body{
 
     background:
-        radial-gradient(circle at top left, rgba(25, 135, 84, 0.14), transparent 28%),
+        radial-gradient(circle at top left, rgba(47, 111, 115, 0.14), transparent 28%),
         linear-gradient(135deg, #f8fbf8 0%, #f2f6f7 55%, #eef4fa 100%);
 
     color:#243447;
     overflow-x:hidden;
 
+}
+
+html[data-theme="dark"]{
+    color-scheme:dark;
+    --bs-body-color:#E2E8EA;
+    --bs-body-color-rgb:226,232,234;
+    --bs-body-bg:#172326;
+    --bs-emphasis-color:#F1F5F6;
+    --bs-secondary-color:rgba(226,232,234,.75);
+    --bs-secondary-bg:#263438;
+    --bs-tertiary-bg:#1D2B2F;
+    --bs-border-color:#3B4B4F;
+    --bs-heading-color:#E8EFF0;
+    --bs-card-bg:#202E32;
+    --bs-card-color:#E2E8EA;
+    --bs-success-bg-subtle:#263D3F;
+    --bs-success-border-subtle:#3B6264;
+    --bs-success-text-emphasis:#B5D7D8;
+    --bs-table-color:#E2E8EA;
+    --bs-table-bg:#202E32;
+    --bs-table-border-color:#3B4B4F;
+    --bs-table-striped-bg:#263438;
+    --bs-table-striped-color:#E2E8EA;
+    --bs-table-hover-bg:#2C3B3F;
+    --bs-table-hover-color:#F1F5F6;
+}
+
+html[data-theme="dark"] body{
+    background:linear-gradient(135deg,#172326 0%,#1C292D 55%,#202E32 100%);
+    color:#E2E8EA;
+}
+
+html[data-theme="dark"] body::before,
+html[data-theme="dark"] body::after{
+    opacity:.12;
+}
+
+html[data-theme="dark"] .sidebar{
+    background:#1D2B2F;
+    border-color:#3B4B4F;
+}
+
+html[data-theme="dark"] .sidebar a{
+    color:#D6E0E2;
+}
+
+html[data-theme="dark"] .sidebar a:hover{
+    color:white;
+}
+
+html[data-theme="dark"] .topbar,
+html[data-theme="dark"] .dashboard-card,
+html[data-theme="dark"] .admin-card{
+    background:#202E32;
+    color:#E2E8EA;
+}
+
+html[data-theme="dark"] .topbar{
+    border-color:#3B4B4F;
+}
+
+html[data-theme="dark"] .topbar strong{
+    color:#D6E0E2;
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .dropdown-menu,
+html[data-theme="dark"] .list-group-item,
+html[data-theme="dark"] .accordion-item{
+    color:#E2E8EA;
+}
+
+html[data-theme="dark"] .bg-white{
+    background-color:#202E32!important;
+    color:#E2E8EA!important;
+}
+
+html[data-theme="dark"] .bg-light{
+    background-color:#263438!important;
+    color:#E2E8EA!important;
+}
+
+html[data-theme="dark"] .table-success{
+    --bs-table-color:#D7E6E6;
+    --bs-table-bg:#263D3F;
+    --bs-table-border-color:#3B6264;
+    --bs-table-striped-bg:#2D4547;
+    --bs-table-hover-bg:#344D4F;
+}
+
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] .input-group-text{
+    background-color:#1D2B2F;
+    border-color:#526267;
+    color:#E2E8EA;
+}
+
+html[data-theme="dark"] .form-control::placeholder{
+    color:#AAB9BC;
+}
+
+html[data-theme="dark"] .form-control:focus,
+html[data-theme="dark"] .form-select:focus{
+    background-color:#1D2B2F;
+    color:#F1F5F6;
+}
+
+.theme-toggle,
+.logout-button{
+    flex-shrink:0;
+}
+
+html[data-theme="dark"] .theme-toggle,
+html[data-theme="dark"] .logout-button{
+    color:#F1F5F6;
+    border-color:#74868A;
+}
+
+html[data-theme="dark"] .theme-toggle:hover,
+html[data-theme="dark"] .logout-button:hover{
+    background:#34474B;
+    border-color:#9AABAE;
+    color:white;
 }
 
 body::before,
@@ -67,7 +208,7 @@ body::before{
     height:280px;
     top:-60px;
     left:-60px;
-    background:#9be6b3;
+    background:#2F6F73;
 }
 
 body::after{
@@ -75,7 +216,7 @@ body::after{
     height:260px;
     right:-40px;
     bottom:-40px;
-    background:#cfe8ff;
+    background:#E7A857;
 }
 
 
@@ -110,8 +251,8 @@ body::after{
 
     background:linear-gradient(
         135deg,
-        #157347,
-        #198754
+        #275B5F,
+        #2F6F73
     );
 
     color:white;
@@ -124,10 +265,32 @@ body::after{
 
 
 
-.logo i{
+.community-mark{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 10px 4px 0;
+    vertical-align:middle;
+}
 
-    font-size:45px;
+.community-mark .community-people{
+    font-size:42px;
+}
 
+.community-mark .community-heart{
+    position:absolute;
+    right:-9px;
+    bottom:-3px;
+    display:grid;
+    width:22px;
+    height:22px;
+    place-items:center;
+    border:2px solid #2F6F73;
+    border-radius:50%;
+    background:#E7A857;
+    color:#275B5F;
+    font-size:12px;
 }
 
 
@@ -181,7 +344,7 @@ body::after{
 
 .sidebar a:hover{
 
-    background:#198754;
+    background:#2F6F73;
 
     color:white;
 
@@ -223,12 +386,42 @@ CONTENT
 
 .topbar h4{
 
-    color:#198754;
+    color:#2F6F73;
 
     font-weight:700;
 
     margin:0;
 
+}
+
+.table-success{
+    --bs-table-color:#254246;
+    --bs-table-bg:#E3F0EF;
+    --bs-table-border-color:#C7DFDD;
+    --bs-table-striped-bg:#D8E9E7;
+    --bs-table-hover-bg:#D1E4E2;
+}
+
+.btn-primary,
+.btn-success{
+    --bs-btn-bg:#2F6F73;
+    --bs-btn-border-color:#2F6F73;
+    --bs-btn-hover-bg:#275B5F;
+    --bs-btn-hover-border-color:#275B5F;
+    --bs-btn-active-bg:#234F53;
+    --bs-btn-active-border-color:#234F53;
+    --bs-btn-disabled-bg:#2F6F73;
+    --bs-btn-disabled-border-color:#2F6F73;
+}
+
+.btn-outline-primary,
+.btn-outline-success{
+    --bs-btn-color:#2F6F73;
+    --bs-btn-border-color:#2F6F73;
+    --bs-btn-hover-bg:#2F6F73;
+    --bs-btn-hover-border-color:#2F6F73;
+    --bs-btn-active-bg:#275B5F;
+    --bs-btn-active-border-color:#275B5F;
 }
 
 
@@ -366,7 +559,10 @@ RESPONSIVE
     <div class="logo">
 
 
-        <i class="bi bi-heart-pulse-fill"></i>
+        <span class="community-mark" aria-hidden="true">
+            <i class="bi bi-people-fill community-people"></i>
+            <i class="bi bi-heart-fill community-heart"></i>
+        </span>
 
 
         <h4>
@@ -383,7 +579,7 @@ RESPONSIVE
 
     <a href="{% url 'dashboard' %}">
 
-        <i class="bi bi-speedometer2"></i>
+        <i class="bi bi-house-door-fill"></i>
 
         <span>
             Dashboard
@@ -441,21 +637,9 @@ RESPONSIVE
     </a>
 
 
+    </div>
 
 
-    <a href="{% url 'logout' %}">
-
-        <i class="bi bi-box-arrow-right"></i>
-
-        <span>
-            Logout
-        </span>
-
-    </a>
-
-
-
-</div>
 
 
 
@@ -471,7 +655,7 @@ RESPONSIVE
     <div class="topbar">
 
 
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
 
             <h4>
@@ -482,12 +666,20 @@ RESPONSIVE
 
 
 
-            <strong>
-
-                Welcome,
-                {{ request.user.username }}
-
-            </strong>
+            <div class="d-flex align-items-center gap-3">
+                <strong>
+                    Welcome, {{ request.user.username }}
+                </strong>
+                <button type="button" class="btn btn-sm btn-outline-secondary theme-toggle"
+                        data-theme-toggle aria-pressed="false">
+                    <i class="bi bi-moon-stars-fill" aria-hidden="true"></i>
+                    <span>Dark mode</span>
+                </button>
+                <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-secondary logout-button">
+                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
 
 
 
@@ -526,8 +718,40 @@ RESPONSIVE
 
 <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
+<script>
+    (() => {
+        const themeToggle = document.querySelector("[data-theme-toggle]");
+        const themeRoot = document.documentElement;
 
+        const updateThemeToggle = () => {
+            const isDark = themeRoot.dataset.theme === "dark";
+            themeToggle.setAttribute("aria-pressed", String(isDark));
+            themeToggle.querySelector("i").className =
+                isDark ? "bi bi-sun-fill" : "bi bi-moon-stars-fill";
+            themeToggle.querySelector("span").textContent =
+                isDark ? "Light mode" : "Dark mode";
+        };
 
+        updateThemeToggle();
+        themeToggle.addEventListener("click", () => {
+            themeRoot.dataset.theme =
+                themeRoot.dataset.theme === "dark" ? "light" : "dark";
+            localStorage.setItem("cnms-theme", themeRoot.dataset.theme);
+            updateThemeToggle();
+        });
+    })();
+</script>
+
+<script>
+    (() => {
+        const goToLogin = () => {
+            window.location.replace("{% url 'logout' %}");
+        };
+
+        window.history.pushState({ logoutOnBack: true }, "", window.location.href);
+        window.addEventListener("popstate", goToLogin);
+    })();
+</script>
 
 </body>
 

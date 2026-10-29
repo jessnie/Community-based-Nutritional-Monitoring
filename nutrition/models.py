@@ -1,8 +1,103 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import OuterRef, Subquery
 from django.utils import timezone
+from functools import lru_cache
+import json
+import math
+from pathlib import Path
 
+from accounts.managers import ActiveRecordManager
 from residents.models import Resident
+
+
+class ActiveAssessmentManager(ActiveRecordManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            resident__archived_at__isnull=True
+        )
+
+
+class ActiveFollowUpManager(ActiveRecordManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            assessment__archived_at__isnull=True,
+            assessment__resident__archived_at__isnull=True,
+        )
+
+
+@lru_cache(maxsize=1)
+def _who_bmi_reference():
+    reference_path = Path(__file__).parent / 'data' / 'who_bmi_lms.json'
+    return json.loads(reference_path.read_text(encoding='utf-8'))
+
+
+def classify_nutritional_status(bmi, sex, age_months):
+    """Classify with WHO BMI-for-age references through 19 years.
+
+    References: WHO Child Growth Standards (0-5 years) and WHO Growth
+    Reference (5-19 years), BMI-for-age indicators.
+    """
+    if age_months > 228:
+        if bmi < 18.5:
+            return 'Underweight'
+        if bmi < 25:
+            return 'Normal'
+        if bmi < 30:
+            return 'Overweight'
+        return 'Obese'
+
+    sex_key = {'Female': 'girls', 'Male': 'boys'}.get(sex)
+    if sex_key is None or age_months < 0:
+        raise ValueError('A valid sex and age are required for BMI classification.')
+
+    l_value, median, variation = _who_bmi_reference()[sex_key][str(age_months)]
+    if l_value == 0:
+        z_score = math.log(bmi / median) / variation
+    else:
+        z_score = ((bmi / median) ** l_value - 1) / (l_value * variation)
+
+    if z_score < -2:
+        return 'Underweight'
+    if age_months <= 60:
+        if z_score > 3:
+            return 'Obese'
+        if z_score > 2:
+            return 'Overweight'
+    else:
+        if z_score > 2:
+            return 'Obese'
+        if z_score > 1:
+            return 'Overweight'
+    return 'Normal'
+
+
+def _age_at(birth_date, assessment_date):
+    age = assessment_date.year - birth_date.year
+    if (assessment_date.month, assessment_date.day) < (birth_date.month, birth_date.day):
+        age -= 1
+    return age
+
+
+def _age_months_at(birth_date, assessment_date):
+    months = (assessment_date.year - birth_date.year) * 12
+    months += assessment_date.month - birth_date.month
+    if assessment_date.day < birth_date.day:
+        months -= 1
+    return months
+
+
+def _age_group_at(birth_date, assessment_date):
+    age = _age_at(birth_date, assessment_date)
+    if age <= 5:
+        return 'Under Five'
+    if age <= 12:
+        return 'Child'
+    if age <= 17:
+        return 'Adolescent'
+    if age <= 59:
+        return 'Adult'
+    return 'Senior Citizen'
 
 class NutritionRule(models.Model):
 
@@ -150,6 +245,18 @@ class NutritionAssessment(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True)
 
+    archived_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    objects = ActiveAssessmentManager()
+    all_objects = models.Manager()
+
+    class Meta:
+        base_manager_name = 'all_objects'
+        default_manager_name = 'objects'
+
 
     def save(self, *args, **kwargs):
 
@@ -167,23 +274,24 @@ class NutritionAssessment(models.Model):
         # Determine Nutritional Status
         # -------------------------
 
-        if bmi < 18.5:
-            self.nutritional_status = "Underweight"
-
-        elif bmi < 25:
-            self.nutritional_status = "Normal"
-
-        elif bmi < 30:
-            self.nutritional_status = "Overweight"
-
-        else:
-            self.nutritional_status = "Obese"
+        age_months = _age_months_at(
+            self.resident.birth_date,
+            self.assessment_date
+        )
+        self.nutritional_status = classify_nutritional_status(
+            bmi,
+            self.resident.sex,
+            age_months
+        )
 
         # -------------------------
         # Determine Age Category
         # -------------------------
 
-        age_group = self.resident.age_category
+        age_group = _age_group_at(
+            self.resident.birth_date,
+            self.assessment_date
+        )
 
         # -------------------------
         # Generate Remarks & Intervention
@@ -464,20 +572,77 @@ class NutritionAssessment(models.Model):
 
         if matching_rule:
             self.rule = matching_rule
-            self.monitoring_flag = matching_rule.monitoring_flag
-
         else:
             self.rule = None
 
-            if self.nutritional_status == "Normal":
-                self.monitoring_flag = "Routine Monitoring"
-            else:
-                self.monitoring_flag = "Needs Follow-up"
+        self.monitoring_flag = (
+            'Routine Monitoring'
+            if self.nutritional_status == 'Normal'
+            else 'Needs Follow-up'
+        )
 
         super().save(*args, **kwargs)
 
+        latest_assessment = current_assessments().get(
+            resident=self.resident
+        )
+        if latest_assessment.pk != self.pk:
+            return
+
+        active_followups = FollowUpRecord.objects.filter(
+            assessment__resident=self.resident,
+            status__in=['Pending', 'For Referral']
+        )
+        if self.nutritional_status == 'Normal':
+            for followup in active_followups:
+                followup.status = 'Completed'
+                resolution_note = (
+                    f'Monitoring resolved by normal assessment on '
+                    f'{self.assessment_date:%Y-%m-%d}.'
+                )
+                followup.notes = '\n'.join(
+                    part for part in (followup.notes, resolution_note) if part
+                )
+                followup.save(update_fields=['status', 'notes', 'updated_at'])
+        else:
+            pending_followups = active_followups.filter(
+                status='Pending'
+            ).exclude(assessment=self)
+            for followup in pending_followups:
+                followup.status = 'Completed'
+                continuation_note = (
+                    f'Monitoring remains active; newer assessment recorded on '
+                    f'{self.assessment_date:%Y-%m-%d}.'
+                )
+                followup.notes = '\n'.join(
+                    part for part in (followup.notes, continuation_note) if part
+                )
+                followup.save(update_fields=['status', 'notes', 'updated_at'])
+
+            if not active_followups.filter(assessment=self).exists():
+                FollowUpRecord.objects.create(
+                    assessment=self,
+                    follow_up_date=self.assessment_date,
+                    status='Pending',
+                    notes='Monitoring remains active until a normal assessment is recorded.',
+                )
+
     def __str__(self):
         return f"{self.resident} - {self.assessment_date}"
+
+
+def current_assessments():
+    latest_for_resident = NutritionAssessment.objects.filter(
+        resident_id=OuterRef('resident_id')
+    ).order_by(
+        '-assessment_date',
+        '-created_at',
+        '-pk'
+    ).values('pk')[:1]
+
+    return NutritionAssessment.objects.filter(
+        pk=Subquery(latest_for_resident)
+    )
 
 
 class FollowUpRecord(models.Model):
@@ -530,7 +695,18 @@ class FollowUpRecord(models.Model):
         auto_now=True
     )
 
+    archived_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    objects = ActiveFollowUpManager()
+    all_objects = models.Manager()
+
     class Meta:
+        base_manager_name = 'all_objects'
+        default_manager_name = 'objects'
+
         ordering = [
             '-follow_up_date',
             '-created_at'
@@ -541,3 +717,25 @@ class FollowUpRecord(models.Model):
             f"{self.assessment.resident} - "
             f"{self.follow_up_date}"
         )
+
+    def save(self, *args, **kwargs):
+        if self.status == 'Completed' and self.assessment_id:
+            latest_assessment = current_assessments().filter(
+                resident_id=self.assessment.resident_id
+            ).first()
+            if latest_assessment and latest_assessment.nutritional_status != 'Normal':
+                self.status = 'Pending'
+                completion_note = (
+                    'Monitoring remains active until a Normal assessment is recorded.'
+                )
+                if completion_note not in self.notes:
+                    self.notes = '\n'.join(
+                        part for part in (self.notes, completion_note) if part
+                    )
+                if kwargs.get('update_fields') is not None:
+                    kwargs['update_fields'] = set(kwargs['update_fields']) | {
+                        'status',
+                        'notes',
+                    }
+
+        super().save(*args, **kwargs)

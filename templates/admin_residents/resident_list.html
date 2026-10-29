@@ -6,10 +6,6 @@
 
     <h3>Residents</h3>
 
-    <a href="{% url 'add_resident' %}" class="btn btn-success">
-        + Add Resident
-    </a>
-
 </div>
 
 <form method="GET" class="mb-3">
@@ -77,19 +73,19 @@
 
     </a>
 
-    <a href="{% url 'edit_resident' resident.id %}"
+    <a href="{% url 'delete_resident' resident.id %}?action=archive"
        class="btn btn-warning btn-sm"
-       aria-label="Edit resident"
-       title="Edit">
+       aria-label="Archive resident"
+       title="Archive">
 
-        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+        <i class="bi bi-archive-fill" aria-hidden="true"></i>
 
     </a>
 
-    <a href="{% url 'delete_resident' resident.id %}"
+    <a href="{% url 'delete_resident' resident.id %}?action=delete"
        class="btn btn-danger btn-sm"
-       aria-label="Delete resident"
-       title="Delete">
+       aria-label="Permanently delete resident"
+       title="Permanently Delete">
 
         <i class="bi bi-trash-fill" aria-hidden="true"></i>
 

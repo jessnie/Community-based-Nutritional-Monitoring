@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth.models import User
-from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404, render, redirect
 
 from .forms import UserForm
 
@@ -11,15 +11,15 @@ def admin_check(user):
 
 @user_passes_test(admin_check, login_url="login")
 def user_list(request):
-
-    users = User.objects.all().order_by("username")
-
     return render(
         request,
         "user_management/user_list.html",
         {
-            "users": users
-        }
+            "users": get_user_model().objects.order_by("username"),
+            "admin_count": get_user_model().objects.filter(
+                is_superuser=True
+            ).count(),
+        },
     )
 
 
@@ -52,21 +52,14 @@ def add_user(request):
 
 @user_passes_test(admin_check, login_url="login")
 def edit_user(request, pk):
-
-    user = get_object_or_404(User, pk=pk)
+    user = get_object_or_404(get_user_model(), pk=pk)
 
     if request.method == "POST":
-
         form = UserForm(request.POST, instance=user)
-
         if form.is_valid():
-
             form.save()
-
             return redirect("user_list")
-
     else:
-
         form = UserForm(instance=user)
 
     return render(
@@ -74,26 +67,27 @@ def edit_user(request, pk):
         "user_management/user_form.html",
         {
             "form": form,
-            "title": "Edit User"
-        }
+            "title": f"Edit User: {user.username}",
+        },
     )
 
 
 @user_passes_test(admin_check, login_url="login")
 def delete_user(request, pk):
+    user = get_object_or_404(get_user_model(), pk=pk)
 
-    user = get_object_or_404(User, pk=pk)
+    if user.pk == request.user.pk or (
+        user.is_superuser
+        and get_user_model().objects.filter(is_superuser=True).count() <= 1
+    ):
+        return redirect("user_list")
 
     if request.method == "POST":
-
         user.delete()
-
         return redirect("user_list")
 
     return render(
         request,
         "user_management/user_delete.html",
-        {
-            "user": user
-        }
+        {"user": user},
     )

@@ -54,6 +54,15 @@ class UserForm(forms.ModelForm):
 
         }
 
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        self._existing_password = (
+            instance.password
+            if instance is not None and instance.pk
+            else None
+        )
+        super().__init__(*args, **kwargs)
+
     def save(self, commit=True):
 
         user = super().save(commit=False)
@@ -63,6 +72,9 @@ class UserForm(forms.ModelForm):
         if password:
 
             user.set_password(password)
+        elif self._existing_password is not None:
+
+            user.password = self._existing_password
 
         if commit:
 

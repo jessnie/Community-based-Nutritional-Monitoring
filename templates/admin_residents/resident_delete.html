@@ -4,23 +4,33 @@
 
 <div class="card shadow">
 
-    <div class="card-header bg-danger text-white">
-        <h4>Delete Resident</h4>
+    <div class="card-header {% if action == 'delete' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">
+        <h4>{% if action == 'delete' %}Permanently Delete Resident{% else %}Archive Resident{% endif %}</h4>
     </div>
 
     <div class="card-body">
 
         <p>
-            Are you sure you want to delete
-            <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>?
+            {% if action == 'delete' %}
+                Permanently delete
+                <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>?
+                This cannot be undone and will also permanently delete all
+                associated assessments and follow-up records.
+            {% else %}
+                Archive
+                <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>?
+                This hides the record and related nutrition history from normal
+                lists. An admin can restore it.
+            {% endif %}
         </p>
 
         <form method="POST">
 
             {% csrf_token %}
 
-            <button class="btn btn-danger">
-                Delete
+            <input type="hidden" name="action" value="{{ action }}">
+            <button class="btn {% if action == 'delete' %}btn-danger{% else %}btn-warning{% endif %}">
+                {% if action == 'delete' %}Permanently Delete{% else %}Archive{% endif %}
             </button>
 
             <a href="{% url 'resident_list' %}" class="btn btn-secondary">

@@ -15,9 +15,60 @@
         font-weight: bold;
     }
 
+    .analytics-summary {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .analytics-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 150px));
+        gap: 12px;
+        justify-content: start;
+    }
+
+    .analytics-summary-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 1;
+        width: 100%;
+        max-width: 150px;
+        padding: 12px;
+        border: 1px solid rgba(47, 111, 115, 0.12);
+        border-radius: 14px;
+        background: #f7faf9;
+        text-align: center;
+    }
+
+    .analytics-summary-tile h3,
+    .analytics-summary-tile .summary-number {
+        margin: 4px 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .analytics-summary-tile p,
+    .analytics-summary-tile small {
+        margin-bottom: 0;
+    }
+
+    html[data-theme="dark"] .analytics-summary-tile {
+        border-color: #3B4B4F;
+        background: #263438;
+    }
+
     .chart-box {
         position: relative;
         height: 300px;
+    }
+
+    @media (max-width: 640px) {
+        .analytics-summary-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 135px));
+        }
     }
 </style>
 
@@ -47,281 +98,71 @@
 </div>
 
 
-<!-- FIRST SUMMARY ROW -->
+<section class="card analytics-summary mb-4" aria-labelledby="analytics-summary-title">
+    <div class="card-body p-4">
+        <h5 id="analytics-summary-title" class="fw-bold mb-3 text-primary">
+            <i class="bi bi-bar-chart-line-fill"></i> Analytics Summary
+        </h5>
 
-<div class="row g-3 mb-4">
-
-    <div class="col-md-6 col-xl-3">
-
-        <div class="card analytics-card">
-
-            <div class="card-body">
-
-                <div class="text-muted">
-                    Total Residents
-                </div>
-
-                <div class="summary-number text-primary">
-                    {{ total_residents }}
-                </div>
-
-                <small class="text-muted">
-                    Registered residents
-                </small>
-
+        <div class="analytics-summary-grid">
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Total Residents</small>
+                <div class="summary-number text-primary">{{ total_residents }}</div>
+                <small class="text-muted">Registered residents</small>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-6 col-xl-3">
-
-        <div class="card analytics-card">
-
-            <div class="card-body">
-
-                <div class="text-muted">
-                    Total Assessments
-                </div>
-
-                <div class="summary-number text-success">
-                    {{ total_assessments }}
-                </div>
-
-                <small class="text-muted">
-                    Nutrition assessments
-                </small>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Total Assessments</small>
+                <div class="summary-number text-success">{{ total_assessments }}</div>
+                <small class="text-muted">Nutrition assessments</small>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-6 col-xl-3">
-
-        <div class="card analytics-card">
-
-            <div class="card-body">
-
-                <div class="text-muted">
-                    Needs Follow-Up
-                </div>
-
-                <div class="summary-number text-warning">
-                    {{ needs_followup }}
-                </div>
-
-                <small class="text-muted">
-                    Flagged assessments
-                </small>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Needs Follow-Up</small>
+                <div class="summary-number text-warning">{{ needs_followup }}</div>
+                <small class="text-muted">Flagged assessments</small>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-6 col-xl-3">
-
-        <div class="card analytics-card">
-
-            <div class="card-body">
-
-                <div class="text-muted">
-                    Follow-Up Records
-                </div>
-
-                <div class="summary-number text-info">
-                    {{ total_followups }}
-                </div>
-
-                <small class="text-muted">
-                    Recorded follow-ups
-                </small>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Follow-Up Records</small>
+                <div class="summary-number text-info">{{ total_followups }}</div>
+                <small class="text-muted">Recorded follow-ups</small>
             </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- SECOND SUMMARY ROW -->
-
-<div class="row g-3 mb-4">
-
-    <div class="col-md-4">
-
-        <div class="card analytics-card">
-
-            <div class="card-body">
-
-                <h6>
-                    Residents Assessed
-                </h6>
-
-                <h3>
-                    {{ assessed_residents }}
-                </h3>
-
-                <p class="text-muted mb-0">
-                    Coverage: {{ coverage }}%
-                </p>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Residents Assessed</small>
+                <h3>{{ assessed_residents }}</h3>
+                <small class="text-muted">Coverage: {{ coverage }}%</small>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-4">
-
-        <div class="card analytics-card">
-
-            <div class="card-body">
-
-                <h6>
-                    Average BMI
-                </h6>
-
-                <h3>
-                    {{ average_bmi }}
-                </h3>
-
-                <p class="text-muted mb-0">
-                    Based on recorded assessments
-                </p>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Average BMI</small>
+                <h3>{{ average_bmi }}</h3>
+                <small class="text-muted">Based on recorded assessments</small>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-4">
-
-        <div class="card analytics-card">
-
-            <div class="card-body">
-
-                <h6>
-                    Routine Monitoring
-                </h6>
-
-                <h3 class="text-success">
-                    {{ routine_monitoring }}
-                </h3>
-
-                <p class="text-muted mb-0">
-                    Current routine-monitoring flags
-                </p>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Routine Monitoring</small>
+                <h3 class="text-success">{{ routine_monitoring }}</h3>
+                <small class="text-muted">Current routine-monitoring flags</small>
             </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- NUTRITION STATUS CARDS -->
-
-<div class="row g-3 mb-4">
-
-    <div class="col-md-3">
-
-        <div class="card analytics-card text-center">
-
-            <div class="card-body">
-
-                <h6>
-                    Normal
-                </h6>
-
-                <h3 class="text-success">
-                    {{ normal }}
-                </h3>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Normal</small>
+                <h3 class="text-success">{{ normal }}</h3>
+                <small class="text-muted">Nutrition status</small>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-3">
-
-        <div class="card analytics-card text-center">
-
-            <div class="card-body">
-
-                <h6>
-                    Underweight
-                </h6>
-
-                <h3 class="text-warning">
-                    {{ underweight }}
-                </h3>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Underweight</small>
+                <h3 class="text-warning">{{ underweight }}</h3>
+                <small class="text-muted">Nutrition status</small>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-3">
-
-        <div class="card analytics-card text-center">
-
-            <div class="card-body">
-
-                <h6>
-                    Overweight
-                </h6>
-
-                <h3 class="text-info">
-                    {{ overweight }}
-                </h3>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Overweight</small>
+                <h3 class="text-info">{{ overweight }}</h3>
+                <small class="text-muted">Nutrition status</small>
             </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-3">
-
-        <div class="card analytics-card text-center">
-
-            <div class="card-body">
-
-                <h6>
-                    Obese
-                </h6>
-
-                <h3 class="text-danger">
-                    {{ obese }}
-                </h3>
-
+            <div class="analytics-summary-tile">
+                <small class="text-muted">Obese</small>
+                <h3 class="text-danger">{{ obese }}</h3>
+                <small class="text-muted">Nutrition status</small>
             </div>
-
         </div>
-
     </div>
-
-</div>
+</section>
 
 
 <!-- CHART ROW -->
@@ -487,288 +328,6 @@
 </div>
 
 
-<!-- RECENT ASSESSMENTS -->
-
-<div class="card analytics-card mb-4">
-
-    <div class="card-header">
-
-        <strong>
-            Recent Assessments
-        </strong>
-
-    </div>
-
-    <div class="card-body">
-
-        <div class="table-responsive">
-
-            <table class="table table-hover">
-
-                <thead>
-
-                    <tr>
-                        <th>Resident</th>
-                        <th>Date</th>
-                        <th>BMI</th>
-                        <th>Status</th>
-                        <th>Monitoring</th>
-                        <th>Assessed By</th>
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    {% for assessment in recent_assessments %}
-
-                    <tr>
-
-                        <td>
-                            {{ assessment.resident.first_name }}
-                            {{ assessment.resident.last_name }}
-                        </td>
-
-                        <td>
-                            {{ assessment.assessment_date }}
-                        </td>
-
-                        <td>
-                            {{ assessment.bmi }}
-                        </td>
-
-                        <td>
-
-                            {% if assessment.nutritional_status == 'Normal' %}
-
-                                <span class="badge bg-success">
-                                    Normal
-                                </span>
-
-                            {% elif assessment.nutritional_status == 'Underweight' %}
-
-                                <span class="badge bg-warning text-dark">
-                                    Underweight
-                                </span>
-
-                            {% elif assessment.nutritional_status == 'Overweight' %}
-
-                                <span class="badge bg-info text-dark">
-                                    Overweight
-                                </span>
-
-                            {% else %}
-
-                                <span class="badge bg-danger">
-                                    Obese
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            {% if assessment.monitoring_flag == 'Routine Monitoring' %}
-
-                                <span class="badge bg-success">
-                                    Routine Monitoring
-                                </span>
-
-                            {% else %}
-
-                                <span class="badge bg-warning text-dark">
-                                    Needs Follow-up
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            {% if assessment.assessed_by %}
-
-                                {{ assessment.assessed_by.username }}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </td>
-
-                    </tr>
-
-                    {% empty %}
-
-                    <tr>
-
-                        <td colspan="6"
-                            class="text-center text-muted">
-
-                            No assessment records found.
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- RECENT FOLLOW UPS -->
-
-<div class="card analytics-card">
-
-    <div class="card-header">
-
-        <strong>
-            Recent Follow-Up Records
-        </strong>
-
-    </div>
-
-    <div class="card-body">
-
-        <div class="table-responsive">
-
-            <table class="table table-hover">
-
-                <thead>
-
-                    <tr>
-                        <th>Resident</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Notes</th>
-                        <th>Next Follow-Up</th>
-                        <th>Recorded By</th>
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    {% for followup in recent_followups %}
-
-                    <tr>
-
-                        <td>
-
-                            {{ followup.assessment.resident.first_name }}
-                            {{ followup.assessment.resident.last_name }}
-
-                        </td>
-
-                        <td>
-                            {{ followup.follow_up_date }}
-                        </td>
-
-                        <td>
-
-                            {% if followup.status == 'Completed' %}
-
-                                <span class="badge bg-success">
-                                    Completed
-                                </span>
-
-                            {% elif followup.status == 'For Referral' %}
-
-                                <span class="badge bg-danger">
-                                    For Referral
-                                </span>
-
-                            {% else %}
-
-                                <span class="badge bg-warning text-dark">
-                                    Pending
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            {% if followup.notes %}
-
-                                {{ followup.notes|truncatechars:60 }}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            {% if followup.next_follow_up_date %}
-
-                                {{ followup.next_follow_up_date }}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            {% if followup.recorded_by %}
-
-                                {{ followup.recorded_by.username }}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </td>
-
-                    </tr>
-
-                    {% empty %}
-
-                    <tr>
-
-                        <td colspan="6"
-                            class="text-center text-muted">
-
-                            No follow-up records found.
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-</div>
-
-
 <!-- SAFE CHART DATA -->
 
 {{ months|json_script:"months-data" }}
@@ -832,7 +391,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     data: statusData,
 
                     backgroundColor: [
-                        '#198754',
+                        '#2F6F73',
                         '#ffc107',
                         '#0dcaf0',
                         '#dc3545'
@@ -858,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     data: monitoringData,
 
                     backgroundColor: [
-                        '#198754',
+                        '#2F6F73',
                         '#ffc107'
                     ]
                 }]
@@ -942,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     backgroundColor: [
                         '#ffc107',
-                        '#198754',
+                        '#2F6F73',
                         '#dc3545'
                     ]
                 }]

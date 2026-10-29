@@ -36,7 +36,7 @@
 
     border-radius:15px;
 
-    background:#198754;
+    background:#2F6F73;
 
     color:white;
 
@@ -55,8 +55,8 @@
 
     background:linear-gradient(
         135deg,
-        #198754,
-        #28b463
+        #275B5F,
+        #4E8588
     );
 
     color:white;
@@ -87,8 +87,7 @@
 
 <p>
 
-Manage community nutrition records,
-monitor residents, and oversee system activities.
+Read-only overview of nutrition assessments, monitoring cases, and pending follow-ups.
 
 </p>
 
@@ -199,7 +198,7 @@ Completed assessments
 
 <h6>
 
-Malnutrition Cases
+Current Monitoring Cases
 
 </h6>
 
@@ -233,28 +232,28 @@ Needs monitoring
 
 <div class="icon-box mb-3">
 
-<i class="bi bi-file-earmark-text-fill"></i>
+<i class="bi bi-hourglass-split"></i>
 
 </div>
 
 
 <h6>
 
-Reports
+Pending Follow-ups
 
 </h6>
 
 
 <h2>
 
-0
+{{ pending_followups }}
 
 </h2>
 
 
 <p class="text-muted">
 
-Generated reports
+Awaiting review
 
 </p>
 
@@ -278,7 +277,7 @@ Generated reports
 
 <h4>
 
-Admin Management
+View Details
 
 </h4>
 
@@ -289,22 +288,22 @@ Admin Management
 
 <div class="col-md-4">
 
-<a href="{% url 'user_list' %}"
+<a href="{% url 'assessment_list' %}"
 class="text-decoration-none">
 
 <div class="admin-card">
 
 <h5>
 
-<i class="bi bi-person-gear"></i>
+<i class="bi bi-heart-pulse-fill"></i>
 
-User Management
+Nutrition Assessments
 
 </h5>
 
 <p class="text-muted">
 
-Create and manage system users.
+View assessment records.
 
 </p>
 
@@ -321,7 +320,7 @@ Create and manage system users.
 <div class="col-md-4">
 
 
-<a href="{% url 'resident_list' %}"
+<a href="{% url 'activity_logs' %}"
 class="text-decoration-none">
 
 
@@ -330,16 +329,16 @@ class="text-decoration-none">
 
 <h5>
 
-<i class="bi bi-people"></i>
+<i class="bi bi-clock-history"></i>
 
-Residents
+Audit Trail
 
 </h5>
 
 
 <p class="text-muted">
 
-Manage resident information.
+Review recorded user actions.
 
 </p>
 

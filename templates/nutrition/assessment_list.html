@@ -259,22 +259,25 @@
 
 
                             <a href="{% url 'edit_assessment' assessment.id %}"
-                               class="btn btn-warning btn-sm mb-1">
-
-                                <i class="bi bi-pencil-square"></i>
-
-                                Edit
-
+                               class="btn btn-warning btn-sm mb-1"
+                               aria-label="Edit assessment"
+                               title="Edit assessment">
+                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
                             </a>
 
 
-                            <a href="{% url 'delete_assessment' assessment.id %}"
-                               class="btn btn-danger btn-sm mb-1">
+                            <a href="{% url 'delete_assessment' assessment.id %}?action=archive"
+                               class="btn btn-warning btn-sm mb-1"
+                               aria-label="Archive assessment"
+                               title="Archive assessment">
+                                <i class="bi bi-archive-fill" aria-hidden="true"></i>
+                            </a>
 
-                                <i class="bi bi-trash-fill"></i>
-
-                                Delete
-
+                            <a href="{% url 'delete_assessment' assessment.id %}?action=delete"
+                               class="btn btn-danger btn-sm mb-1"
+                               aria-label="Permanently delete assessment"
+                               title="Permanently delete assessment">
+                                <i class="bi bi-trash-fill" aria-hidden="true"></i>
                             </a>
 
                         </td>

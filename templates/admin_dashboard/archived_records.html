@@ -1,0 +1,89 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Archived Records</h2>
+            <p class="text-muted mb-0">Restore records or permanently remove them.</p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="alert alert-warning">
+        Permanent deletion cannot be undone. Permanently deleting a resident also
+        deletes related assessments and follow-ups; permanently deleting an
+        assessment also deletes its follow-ups.
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Record type</th>
+                        <th>Record</th>
+                        <th>Archived</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                        <tr>
+                            <td>{{ record.label }}</td>
+                            <td>{{ record.summary }}</td>
+                            <td>{{ record.archived_at|date:"M j, Y g:i A" }}</td>
+                            <td class="text-end">
+                                <form method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="record_type" value="{{ record.record_type }}">
+                                    <input type="hidden" name="record_id" value="{{ record.object_id }}">
+                                    <input type="hidden" name="action" value="restore">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        Restore
+                                    </button>
+                                </form>
+                                <form method="post" class="d-inline"
+                                      onsubmit="return confirm('Permanently delete this record? This cannot be undone.');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="record_type" value="{{ record.record_type }}">
+                                    <input type="hidden" name="record_id" value="{{ record.object_id }}">
+                                    <input type="hidden" name="action" value="delete">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            aria-label="Permanently delete record"
+                                            title="Permanently delete record">
+                                        <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                                {% if record.includes_children %}
+                                    <small class="d-block text-muted mt-1">
+                                        Permanent deletion also removes related nutrition records.
+                                    </small>
+                                {% elif record.includes_followups %}
+                                    <small class="d-block text-muted mt-1">
+                                        Permanent deletion also removes related follow-ups.
+                                    </small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                No archived records.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

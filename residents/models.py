@@ -2,6 +2,9 @@ from django.conf import settings
 from django.db import models
 from datetime import date
 
+from accounts.managers import ActiveRecordManager
+
+
 class Resident(models.Model):
 
     GENDER_CHOICES = [
@@ -60,6 +63,14 @@ class Resident(models.Model):
 
     updated_at = models.DateTimeField(auto_now=True)
 
+    archived_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    objects = ActiveRecordManager()
+    all_objects = models.Manager()
+
     @property
     def age(self):
 
@@ -101,7 +112,7 @@ class Resident(models.Model):
         if not self.resident_id:
 
             last_resident = (
-                Resident.objects
+                Resident.all_objects
                 .order_by('-id')
                 .first()
             )
@@ -136,6 +147,8 @@ class Resident(models.Model):
         )
 
     class Meta:
+        base_manager_name = 'all_objects'
+        default_manager_name = 'objects'
 
         ordering = [
             'last_name',

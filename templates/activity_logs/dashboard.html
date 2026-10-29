@@ -19,7 +19,7 @@
     justify-content:center;
     color:white;
     font-size:28px;
-    background:#198754;
+    background:#2F6F73;
 }
 
 </style>
@@ -31,11 +31,11 @@
         <div>
 
             <h2 class="fw-bold">
-                Activity Logs
+                Audit Trail
             </h2>
 
             <p class="text-muted">
-                Monitor all user activities within the system.
+                Review user actions recorded within the system.
             </p>
 
         </div>
@@ -56,7 +56,7 @@
 
                         <small class="text-muted">
 
-                            Total Logs
+                            Total Audit Events
 
                         </small>
 
@@ -90,7 +90,7 @@
 
             <h5 class="mb-0">
 
-                Activity History
+                Audit History
 
             </h5>
 
@@ -118,7 +118,7 @@
 
                     <tbody>
 
-                    {% for log in logs %}
+                    {% for log in page_obj %}
 
                         <tr>
 
@@ -164,7 +164,7 @@
 
                             <td colspan="5" class="text-center">
 
-                                No activity logs found.
+                                No audit records found.
 
                             </td>
 
@@ -177,6 +177,26 @@
                 </table>
 
             </div>
+
+            <nav aria-label="Audit trail pages">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ page_obj.number }}</span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
 
         </div>
 

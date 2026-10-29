@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django.http import HttpResponse
 
 from activity_logs.models import ActivityLog
@@ -19,7 +20,7 @@ from reportlab.platypus import (
 )
 from reportlab.lib.styles import getSampleStyleSheet
 
-from nutrition.models import NutritionAssessment
+from nutrition.models import NutritionAssessment, FollowUpRecord
 from residents.models import Resident
 
 
@@ -32,36 +33,92 @@ def get_template(request, staff_template, admin_template):
     return staff_template
 
 
-@login_required(login_url='login')
-def report_dashboard(request):
+def filtered_assessments(request):
+    assessments = NutritionAssessment.objects.select_related(
+        'resident'
+    ).order_by('-assessment_date', '-created_at')
 
-    status = request.GET.get('status', '')
+    status = request.GET.get('status', '').strip()
     resident_name = request.GET.get('resident_name', '').strip()
-
-    assessments = NutritionAssessment.objects.all().order_by(
-        '-assessment_date'
+    resident_id = (
+        request.GET.get('resident_id', '').strip()
+        or request.GET.get('resident', '').strip()
     )
+    date_from_value = request.GET.get('date_from', '').strip()
+    date_to_value = request.GET.get('date_to', '').strip()
+    date_from = parse_date(date_from_value) if date_from_value else None
+    date_to = parse_date(date_to_value) if date_to_value else None
 
-    # Filter by nutritional status
-    if status:
-        assessments = assessments.filter(
-            nutritional_status=status
-        )
+    invalid_filter = False
+    if status in dict(NutritionAssessment.STATUS_CHOICES):
+        assessments = assessments.filter(nutritional_status=status)
+    elif status:
+        invalid_filter = True
+        status = ''
 
-    # Filter by resident name
+    if resident_id and resident_id.isdecimal():
+        assessments = assessments.filter(resident_id=resident_id)
+    elif resident_id:
+        invalid_filter = True
+
     if resident_name:
         assessments = assessments.filter(
-            Q(resident__first_name__icontains=resident_name) |
-            Q(resident__last_name__icontains=resident_name)
+            Q(resident__first_name__icontains=resident_name)
+            | Q(resident__last_name__icontains=resident_name)
         )
+
+    invalid_date = (
+        (date_from_value and date_from is None)
+        or (date_to_value and date_to is None)
+    )
+    invalid_range = date_from and date_to and date_from > date_to
+    if invalid_date or invalid_range or invalid_filter:
+        assessments = assessments.none()
+    else:
+        if date_from:
+            assessments = assessments.filter(assessment_date__gte=date_from)
+        if date_to:
+            assessments = assessments.filter(assessment_date__lte=date_to)
+
+    return assessments, {
+        'status': status,
+        'resident_name': resident_name,
+        'resident_id': resident_id,
+        'date_from': date_from_value,
+        'date_to': date_to_value,
+        'date_error': bool(invalid_date or invalid_range),
+        'export_query': request.GET.urlencode(),
+    }
+
+
+@login_required(login_url='login')
+def report_dashboard(request):
+    assessments, filters = filtered_assessments(request)
 
     today = timezone.now()
 
-    total_reports = NutritionAssessment.objects.count()
+    total_reports = assessments.count()
 
-    monthly_reports = NutritionAssessment.objects.filter(
+    monthly_reports = assessments.filter(
         assessment_date__month=today.month,
         assessment_date__year=today.year
+    ).count()
+
+    status_summary = {
+        status_name: assessments.filter(nutritional_status=status_name).count()
+        for status_name, _ in NutritionAssessment.STATUS_CHOICES
+    }
+
+    urgent_cases = assessments.filter(
+        nutritional_status__in=['Underweight', 'Obese']
+    ).order_by(
+        '-assessment_date',
+        '-bmi'
+    )[:5]
+
+    pending_followups = FollowUpRecord.objects.filter(
+        assessment__in=assessments,
+        status='Pending'
     ).count()
 
     pdf_exports = ActivityLog.objects.filter(
@@ -74,13 +131,16 @@ def report_dashboard(request):
 
     context = {
         'assessments': assessments,
-        'status': status,
-        'resident_name': resident_name,
+        'residents': Resident.objects.order_by('last_name', 'first_name'),
         'total_reports': total_reports,
         'monthly_reports': monthly_reports,
+        'status_summary': status_summary,
+        'urgent_cases': urgent_cases,
+        'pending_followups': pending_followups,
         'pdf_exports': pdf_exports,
         'excel_exports': excel_exports,
     }
+    context.update(filters)
 
     return render(
         request,
@@ -189,11 +249,7 @@ def export_pdf(request):
         Paragraph("<br/>", styles["Normal"])
     )
 
-    assessments = NutritionAssessment.objects.select_related(
-        'resident'
-    ).order_by(
-        '-assessment_date'
-    )
+    assessments, _ = filtered_assessments(request)
 
     data = [[
         "Date",
@@ -312,11 +368,7 @@ def export_excel(request):
         cell.value = header
         cell.font = Font(bold=True)
 
-    assessments = NutritionAssessment.objects.select_related(
-        'resident'
-    ).order_by(
-        '-assessment_date'
-    )
+    assessments, _ = filtered_assessments(request)
 
     row = 6
 

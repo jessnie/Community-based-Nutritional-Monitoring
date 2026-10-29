@@ -8,10 +8,10 @@
 
         <div class="card shadow border-0">
 
-            <div class="card-header bg-danger text-white">
+            <div class="card-header {% if action == 'delete' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">
 
                 <h4 class="mb-0">
-                    Delete Nutrition Assessment
+                    {% if action == 'delete' %}Permanently Delete Nutrition Assessment{% else %}Archive Nutrition Assessment{% endif %}
                 </h4>
 
             </div>
@@ -20,7 +20,13 @@
 
                 <p class="fs-5">
 
-                    Are you sure you want to delete this nutrition assessment?
+                    {% if action == 'delete' %}
+                        Permanently delete this assessment? This cannot be undone
+                        and will also delete its follow-up records.
+                    {% else %}
+                        Archive this nutrition assessment? An admin can restore it
+                        later from Archived Records.
+                    {% endif %}
 
                 </p>
 
@@ -54,14 +60,15 @@
                 <form method="POST">
 
                     {% csrf_token %}
+                    <input type="hidden" name="action" value="{{ action }}">
 
                     <button
                         type="submit"
-                        class="btn btn-danger">
+                        class="btn {% if action == 'delete' %}btn-danger{% else %}btn-warning{% endif %}">
 
                         <i class="bi bi-trash-fill"></i>
 
-                        Delete
+                        {% if action == 'delete' %}Permanently Delete{% else %}Archive{% endif %}
 
                     </button>
 

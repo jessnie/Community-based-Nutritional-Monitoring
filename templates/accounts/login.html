@@ -22,6 +22,16 @@
           
 <style>
 
+:root{
+    --bs-primary:#2F6F73;
+    --bs-primary-rgb:47,111,115;
+    --bs-success:#2F6F73;
+    --bs-success-rgb:47,111,115;
+    --bs-success-bg-subtle:#E3F0EF;
+    --bs-success-border-subtle:#C7DFDD;
+    --bs-success-text-emphasis:#275B5F;
+}
+
 *{
     margin:0;
     padding:0;
@@ -31,7 +41,7 @@
 
 body{
 
-    background:linear-gradient(135deg,#157347,#198754,#20a162);
+    background:linear-gradient(135deg,#275B5F,#2F6F73,#4E8588);
 
     overflow:hidden;
 
@@ -137,10 +147,30 @@ body{
 
 }
 
-.logo i{
+.community-mark{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
 
+.community-mark .community-people{
     font-size:35px;
+}
 
+.community-mark .community-heart{
+    position:absolute;
+    right:-8px;
+    bottom:-4px;
+    display:grid;
+    width:20px;
+    height:20px;
+    place-items:center;
+    border:2px solid rgba(255,255,255,.8);
+    border-radius:50%;
+    background:#E7A857;
+    color:#275B5F;
+    font-size:11px;
 }
 
 .left-content h1{
@@ -335,7 +365,7 @@ body{
 
     background:white;
 
-    color:#198754;
+    color:#2F6F73;
 
     border:none;
 
@@ -349,7 +379,7 @@ body{
 
     background:#f3f3f3;
 
-    color:#198754;
+    color:#2F6F73;
 
 }
 
@@ -409,7 +439,10 @@ overflow:auto;
 
             <div class="logo">
 
-                <i class="bi bi-heart-pulse-fill"></i>
+                <span class="community-mark" aria-hidden="true">
+                    <i class="bi bi-people-fill community-people"></i>
+                    <i class="bi bi-heart-fill community-heart"></i>
+                </span>
 
             </div>
 
@@ -676,9 +709,9 @@ window.addEventListener("load", function(){
 
 .form-control:focus{
 
-    border-color:#198754;
+    border-color:#2F6F73;
 
-    box-shadow:0 0 0 .2rem rgba(25,135,84,.20);
+    box-shadow:0 0 0 .2rem rgba(47,111,115,.20);
 
 }
 
@@ -692,7 +725,7 @@ window.addEventListener("load", function(){
 
 .btn-success:hover{
 
-    box-shadow:0 12px 25px rgba(25,135,84,.30);
+    box-shadow:0 12px 25px rgba(47,111,115,.30);
 
 }
 

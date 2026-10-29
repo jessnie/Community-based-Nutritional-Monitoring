@@ -1,11 +1,14 @@
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import (
     render,
     redirect,
     get_object_or_404,
 )
+from django.utils import timezone
 
+from accounts.decorators import staff_required
 from .forms import (
     NutritionAssessmentForm,
     FollowUpRecordForm,
@@ -96,11 +99,7 @@ def add_assessment(request):
 
             ActivityLog.objects.create(
                 user=request.user,
-                role=(
-                    "Admin"
-                    if request.user.is_superuser
-                    else "Staff"
-                ),
+                role="Staff",
                 action="Add Assessment",
                 description=(
                     f"Added nutrition assessment for "
@@ -132,6 +131,9 @@ def add_assessment(request):
 @login_required(login_url='login')
 def edit_assessment(request, pk):
 
+    if request.user.is_superuser:
+        return redirect('assessment_list')
+
     assessment = get_object_or_404(
         NutritionAssessment,
         pk=pk
@@ -162,11 +164,7 @@ def edit_assessment(request, pk):
 
             ActivityLog.objects.create(
                 user=request.user,
-                role=(
-                    "Admin"
-                    if request.user.is_superuser
-                    else "Staff"
-                ),
+                role="Staff",
                 action="Edit Assessment",
                 description=(
                     f"Updated nutrition assessment for "
@@ -209,6 +207,13 @@ def delete_assessment(request, pk):
         pk=pk
     )
 
+    action = request.POST.get(
+        'action',
+        request.GET.get('action', 'archive')
+    )
+    if action not in {'archive', 'delete'}:
+        return redirect('assessment_list')
+
     if request.method == 'POST':
 
         resident_name = (
@@ -216,21 +221,34 @@ def delete_assessment(request, pk):
             f"{assessment.resident.last_name}"
         )
 
-        ActivityLog.objects.create(
-            user=request.user,
-            role=(
-                "Admin"
-                if request.user.is_superuser
-                else "Staff"
-            ),
-            action="Delete Assessment",
-            description=(
-                f"Deleted nutrition assessment "
-                f"for {resident_name}"
-            )
-        )
+        with transaction.atomic():
+            if action == 'delete':
+                ActivityLog.objects.create(
+                    user=request.user,
+                    role='Admin' if request.user.is_superuser else 'Staff',
+                    action='Permanently Delete Record',
+                    description=(
+                        f"Permanently deleted nutrition assessment "
+                        f"for {resident_name} and related follow-ups."
+                    ),
+                )
+                assessment.delete()
+            else:
+                ActivityLog.objects.create(
+                    user=request.user,
+                    role='Admin' if request.user.is_superuser else 'Staff',
+                    action='Archive Record',
+                    description=(
+                        f"Archived nutrition assessment "
+                        f"for {resident_name}"
+                    )
+                )
 
-        assessment.delete()
+                archived_at = timezone.now()
+                NutritionAssessment.all_objects.filter(pk=assessment.pk).update(
+                    archived_at=archived_at,
+                    updated_at=archived_at,
+                )
 
         return redirect(
             'assessment_list'
@@ -244,7 +262,8 @@ def delete_assessment(request, pk):
             'admin_nutrition/assessment_delete.html'
         ),
         {
-            'assessment': assessment
+            'assessment': assessment,
+            'action': action,
         }
     )
 
@@ -356,8 +375,11 @@ def followup_list(request):
     )
 
 
-@login_required(login_url='login')
+@staff_required
 def add_followup(request):
+
+    if request.user.is_superuser:
+        return redirect('followup_list')
 
     selected_assessment = (
         request.GET.get('assessment')
@@ -417,8 +439,11 @@ def add_followup(request):
     )
 
 
-@login_required(login_url='login')
+@staff_required
 def edit_followup(request, pk):
+
+    if request.user.is_superuser:
+        return redirect('followup_list')
 
     followup = get_object_or_404(
         FollowUpRecord,
@@ -488,9 +513,47 @@ def delete_followup(request, pk):
         pk=pk
     )
 
+    action = request.POST.get(
+        'action',
+        request.GET.get('action', 'archive')
+    )
+    if action not in {'archive', 'delete'}:
+        return redirect('followup_list')
+
     if request.method == 'POST':
 
-        followup.delete()
+        resident_name = (
+            f"{followup.assessment.resident.first_name} "
+            f"{followup.assessment.resident.last_name}"
+        )
+        with transaction.atomic():
+            if action == 'delete':
+                ActivityLog.objects.create(
+                    user=request.user,
+                    role='Admin' if request.user.is_superuser else 'Staff',
+                    action='Permanently Delete Record',
+                    description=(
+                        f"Permanently deleted follow-up record for {resident_name} "
+                        f"on {followup.follow_up_date}."
+                    ),
+                )
+                followup.delete()
+            else:
+                ActivityLog.objects.create(
+                    user=request.user,
+                    role='Admin' if request.user.is_superuser else 'Staff',
+                    action='Archive Record',
+                    description=(
+                        f"Archived follow-up record for {resident_name} "
+                        f"on {followup.follow_up_date}"
+                    )
+                )
+
+                archived_at = timezone.now()
+                FollowUpRecord.all_objects.filter(pk=followup.pk).update(
+                    archived_at=archived_at,
+                    updated_at=archived_at,
+                )
 
         return redirect(
             'followup_list'
@@ -499,6 +562,7 @@ def delete_followup(request, pk):
     context = {
 
         'followup': followup,
+        'action': action,
 
         'base_template': (
             get_base_template(request)

@@ -1,8 +1,11 @@
-from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 
+from accounts.decorators import staff_required
 from .forms import ResidentForm
 from .models import Resident
 from nutrition.models import NutritionAssessment
@@ -65,8 +68,11 @@ def resident_list(request):
     )
 
 
-@login_required(login_url='login')
+@staff_required
 def add_resident(request):
+
+    if request.user.is_superuser:
+        return redirect('resident_list')
 
     if request.method == 'POST':
 
@@ -87,11 +93,7 @@ def add_resident(request):
 
             ActivityLog.objects.create(
                 user=request.user,
-                role=(
-                    "Admin"
-                    if request.user.is_superuser
-                    else "Staff"
-                ),
+                role="Staff",
                 action="Add Resident",
                 description=(
                     f"Added resident "
@@ -125,11 +127,14 @@ def add_resident(request):
     )
 
 
-@login_required(login_url='login')
+@staff_required
 def edit_resident(request, pk):
 
+    if request.user.is_superuser:
+        return redirect('resident_list')
+
     resident = get_object_or_404(
-        Resident,
+    Resident.objects,
         pk=pk
     )
 
@@ -201,6 +206,13 @@ def delete_resident(request, pk):
         pk=pk
     )
 
+    action = request.POST.get(
+        'action',
+        request.GET.get('action', 'archive')
+    )
+    if action not in {'archive', 'delete'}:
+        return redirect('resident_list')
+
     if request.method == 'POST':
 
         resident_name = (
@@ -208,21 +220,34 @@ def delete_resident(request, pk):
             f"{resident.last_name}"
         )
 
-        ActivityLog.objects.create(
-            user=request.user,
-            role=(
-                "Admin"
-                if request.user.is_superuser
-                else "Staff"
-            ),
-            action="Delete Resident",
-            description=(
-                f"Deleted resident "
-                f"{resident_name}"
-            )
-        )
+        with transaction.atomic():
+            if action == 'delete':
+                ActivityLog.objects.create(
+                    user=request.user,
+                    role='Admin' if request.user.is_superuser else 'Staff',
+                    action='Permanently Delete Record',
+                    description=(
+                        f"Permanently deleted resident {resident_name} "
+                        f"(ID: {resident.resident_id}) and related nutrition history."
+                    ),
+                )
+                resident.delete()
+            else:
+                ActivityLog.objects.create(
+                    user=request.user,
+                    role='Admin' if request.user.is_superuser else 'Staff',
+                    action='Archive Record',
+                    description=(
+                        f"Archived resident "
+                        f"{resident_name} (ID: {resident.resident_id})"
+                    )
+                )
 
-        resident.delete()
+                archived_at = timezone.now()
+                Resident.all_objects.filter(pk=resident.pk).update(
+                    archived_at=archived_at,
+                    updated_at=archived_at,
+                )
 
         return redirect(
             'resident_list'
@@ -236,7 +261,8 @@ def delete_resident(request, pk):
             'admin_residents/resident_delete.html'
         ),
         {
-            'resident': resident
+            'resident': resident,
+            'action': action,
         }
     )
 

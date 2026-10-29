@@ -4,11 +4,16 @@
 
 <style>
     .dashboard-hero {
-        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        background: linear-gradient(135deg, #275B5F 0%, #4E8588 100%);
         border-radius: 20px;
         color: white;
         padding: 24px 28px;
         margin-bottom: 24px;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 280px;
     }
 
     .dashboard-card {
@@ -17,6 +22,72 @@
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         height: 100%;
+    }
+
+    .population-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 1;
+        width: 100%;
+        max-width: 150px;
+        padding: 12px;
+        border: 1px solid rgba(47, 111, 115, 0.12);
+        border-radius: 14px;
+        background: #f7faf9;
+        text-align: center;
+    }
+
+    .stat-tile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 150px));
+        gap: 12px;
+        justify-content: start;
+    }
+
+    .population-stat .dashboard-icon {
+        width: 42px;
+        height: 42px;
+        margin: 0 0 6px;
+        border-radius: 12px;
+        font-size: 20px;
+        order: -1;
+    }
+
+    .population-stat h3 {
+        font-size: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+        .stat-tile-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 135px));
+        }
+    }
+
+    .population-stat h3 {
+        color: #275B5F;
+    }
+
+    .population-group-title {
+        color: #526267;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    html[data-theme="dark"] .population-stat {
+        border-color: #3B4B4F;
+        background: #263438;
+    }
+
+    html[data-theme="dark"] .population-stat h3 {
+        color: #B5D7D8;
+    }
+
+    html[data-theme="dark"] .population-group-title {
+        color: #C3D0D2;
     }
 
     .dashboard-card:hover {
@@ -36,196 +107,342 @@
     }
 
     .section-title {
-        color: #198754;
+        color: #2F6F73;
         font-weight: 700;
         margin-bottom: 14px;
+    }
+
+    .live-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(47, 111, 115, 0.08);
+        color: #2F6F73;
+        border: 1px solid rgba(47, 111, 115, 0.15);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #2F6F73;
+        box-shadow: 0 0 0 0 rgba(47, 111, 115, 0.7);
+        animation: pulse 1.8s infinite;
+    }
+
+    .priority-panel {
+        border-left: 5px solid #E7A857;
+        background: linear-gradient(135deg, rgba(47,111,115,0.08), rgba(13,110,253,0.04));
+        border-radius: 16px;
+        padding: 18px;
+    }
+
+    .priority-badge {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .priority-table th,
+    .priority-table td {
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .priority-high {
+        background: rgba(220,53,69,0.12);
+        color: #b02a37;
+    }
+
+    .priority-medium {
+        background: rgba(255,193,7,0.18);
+        color: #9a6700;
+    }
+
+    .priority-low {
+        background: rgba(47,111,115,0.12);
+        color: #275B5F;
+    }
+
+    .nutrition-resource-image {
+        width: 100%;
+        height: 220px;
+        object-fit: contain;
+        background: #fff;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(47, 111, 115, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(47, 111, 115, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(47, 111, 115, 0); }
     }
 </style>
 
 <div class="dashboard-hero">
-    <h3 class="fw-bold mb-2">Community Health Dashboard</h3>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h3 class="fw-bold mb-0">Community Health Dashboard</h3>
+        <span class="live-indicator"><span class="live-dot"></span> Live data</span>
+    </div>
     <h4 class="fw-semibold mb-2">Welcome Staff</h4>
     <p class="mb-2">Welcome to the <strong>Community-Based Nutritional Monitoring and Decision Support System.</strong></p>
     <p class="mb-0">This dashboard provides a real-time view of resident demographics and nutrition monitoring results for Barangay Can-Uguib.</p>
 </div>
 
-<div class="mb-4">
-    <h5 class="section-title">
-        <i class="bi bi-people-fill"></i> Population Summary
-    </h5>
+<div class="priority-panel mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <h5 class="section-title mb-0">
+            <i class="bi bi-shield-check"></i> Priority Status
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <span id="priority-badge" class="priority-badge priority-{{ priority_level|lower }}">{{ priority_level }}</span>
+            <small class="text-muted">Updated <span id="last-updated">{{ last_updated }}</span></small>
+        </div>
+    </div>
+    <p id="priority-summary" class="mb-0 text-muted">{{ priority_summary }}</p>
+</div>
 
-    <div class="row g-3">
-        <div class="col-lg-3 col-md-6">
-            <div class="card dashboard-card">
-                <div class="card-body d-flex justify-content-between align-items-center">
+<div class="row g-4 mb-4 align-items-stretch">
+    <div class="col-lg-6">
+        <section class="card dashboard-card h-100" aria-labelledby="population-summary-title">
+            <div class="card-body">
+        <h5 id="population-summary-title" class="fw-bold mb-3 text-primary">
+            <i class="bi bi-people-fill"></i> Population Summary
+        </h5>
+
+        <p class="population-group-title mb-2">Population overview</p>
+        <div class="stat-tile-grid mb-4">
+                <div class="population-stat">
                     <div>
                         <small class="text-muted">Total Population</small>
-                        <h3 class="fw-bold mb-0">{{ total_population }}</h3>
+                        <h3 id="total-population" class="fw-bold mb-0">{{ total_population }}</h3>
                     </div>
                     <div class="dashboard-icon" style="background:#0d6efd">
                         <i class="bi bi-people-fill"></i>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6">
-            <div class="card dashboard-card">
-                <div class="card-body d-flex justify-content-between align-items-center">
+                <div class="population-stat">
                     <div>
                         <small class="text-muted">Male</small>
-                        <h3 class="fw-bold mb-0">{{ total_male }}</h3>
+                        <h3 id="total-male" class="fw-bold mb-0">{{ total_male }}</h3>
                     </div>
                     <div class="dashboard-icon" style="background:#0dcaf0">
                         <i class="bi bi-gender-male"></i>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6">
-            <div class="card dashboard-card">
-                <div class="card-body d-flex justify-content-between align-items-center">
+                <div class="population-stat">
                     <div>
                         <small class="text-muted">Female</small>
-                        <h3 class="fw-bold mb-0">{{ total_female }}</h3>
+                        <h3 id="total-female" class="fw-bold mb-0">{{ total_female }}</h3>
                     </div>
                     <div class="dashboard-icon" style="background:#dc3545">
                         <i class="bi bi-gender-female"></i>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6">
-            <div class="card dashboard-card">
-                <div class="card-body d-flex justify-content-between align-items-center">
+                <div class="population-stat">
                     <div>
                         <small class="text-muted">Senior Citizens</small>
-                        <h3 class="fw-bold mb-0">{{ seniors }}</h3>
+                        <h3 id="senior-citizens" class="fw-bold mb-0">{{ seniors }}</h3>
                     </div>
                     <div class="dashboard-icon" style="background:#fd7e14">
                         <i class="bi bi-person-heart"></i>
                     </div>
                 </div>
-            </div>
         </div>
-    </div>
-</div>
 
-<div class="mb-4">
-    <div class="row g-3">
-        <div class="col-lg-4 col-md-6">
-            <div class="card dashboard-card">
-                <div class="card-body d-flex justify-content-between align-items-center">
+        <p class="population-group-title mb-2">Age groups</p>
+        <div class="stat-tile-grid">
+                <div class="population-stat">
                     <div>
                         <small class="text-muted">Children</small>
-                        <h3 class="fw-bold mb-0">{{ children }}</h3>
+                        <h3 id="children-count" class="fw-bold mb-0">{{ children }}</h3>
                     </div>
-                    <div class="dashboard-icon" style="background:#198754">
+                    <div class="dashboard-icon" style="background:#2F6F73">
                         <i class="bi bi-balloon-fill"></i>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4 col-md-6">
-            <div class="card dashboard-card">
-                <div class="card-body d-flex justify-content-between align-items-center">
+                <div class="population-stat">
                     <div>
                         <small class="text-muted">Adolescents</small>
-                        <h3 class="fw-bold mb-0">{{ adolescents }}</h3>
+                        <h3 id="adolescents-count" class="fw-bold mb-0">{{ adolescents }}</h3>
                     </div>
                     <div class="dashboard-icon" style="background:#6f42c1">
                         <i class="bi bi-person-fill"></i>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4 col-md-6">
-            <div class="card dashboard-card">
-                <div class="card-body d-flex justify-content-between align-items-center">
+                <div class="population-stat">
                     <div>
                         <small class="text-muted">Adults</small>
-                        <h3 class="fw-bold mb-0">{{ adults }}</h3>
+                        <h3 id="adults-count" class="fw-bold mb-0">{{ adults }}</h3>
                     </div>
                     <div class="dashboard-icon" style="background:#6c757d">
                         <i class="bi bi-person-workspace"></i>
                     </div>
                 </div>
-            </div>
         </div>
+            </div>
+        </section>
     </div>
-</div>
 
-<div class="mb-4">
-    <h5 class="section-title">
-        <i class="bi bi-heart-pulse-fill"></i> Nutrition Summary
-    </h5>
+    <div class="col-lg-6">
+        <section class="card dashboard-card h-100" aria-labelledby="nutrition-summary-title">
+            <div class="card-body">
+        <h5 id="nutrition-summary-title" class="fw-bold mb-3 text-primary">
+            <i class="bi bi-heart-pulse-fill"></i> Nutrition Summary
+        </h5>
 
-    <div class="row g-3">
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <div class="dashboard-icon mx-auto mb-2" style="background:#198754">
+        <div class="stat-tile-grid">
+                <div class="population-stat">
+                    <div class="dashboard-icon" style="background:#2F6F73">
                         <i class="bi bi-heart-fill"></i>
                     </div>
                     <small class="text-muted">Normal</small>
-                    <h3 class="fw-bold mb-0">{{ normal }}</h3>
+                    <h3 id="normal-count" class="fw-bold mb-0">{{ normal }}</h3>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <div class="dashboard-icon mx-auto mb-2" style="background:#ffc107">
+                <div class="population-stat">
+                    <div class="dashboard-icon" style="background:#ffc107">
                         <i class="bi bi-exclamation-circle-fill"></i>
                     </div>
                     <small class="text-muted">Underweight</small>
-                    <h3 class="fw-bold mb-0">{{ underweight }}</h3>
+                    <h3 id="underweight-count" class="fw-bold mb-0">{{ underweight }}</h3>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <div class="dashboard-icon mx-auto mb-2" style="background:#0d6efd">
+                <div class="population-stat">
+                    <div class="dashboard-icon" style="background:#0d6efd">
                         <i class="bi bi-arrow-up-circle-fill"></i>
                     </div>
                     <small class="text-muted">Overweight</small>
-                    <h3 class="fw-bold mb-0">{{ overweight }}</h3>
+                    <h3 id="overweight-count" class="fw-bold mb-0">{{ overweight }}</h3>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-lg-2 col-md-4 col-sm-6">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <div class="dashboard-icon mx-auto mb-2" style="background:#dc3545">
+                <div class="population-stat">
+                    <div class="dashboard-icon" style="background:#dc3545">
                         <i class="bi bi-x-circle-fill"></i>
                     </div>
                     <small class="text-muted">Obese</small>
-                    <h3 class="fw-bold mb-0">{{ obese }}</h3>
+                    <h3 id="obese-count" class="fw-bold mb-0">{{ obese }}</h3>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-lg-4 col-md-4 col-sm-6">
-            <div class="card dashboard-card">
-                <div class="card-body text-center">
-                    <div class="dashboard-icon mx-auto mb-2" style="background:#20c997">
+                <div class="population-stat">
+                    <div class="dashboard-icon" style="background:#4E8588">
                         <i class="bi bi-clipboard2-pulse-fill"></i>
                     </div>
                     <small class="text-muted">Total Assessments</small>
-                    <h3 class="fw-bold mb-0">{{ total_assessments }}</h3>
+                    <h3 id="total-assessments" class="fw-bold mb-0">{{ total_assessments }}</h3>
+                </div>
+        </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<section class="mb-4" aria-labelledby="dashboard-charts-title">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h5 id="dashboard-charts-title" class="section-title mb-0">
+            <i class="bi bi-bar-chart-line-fill"></i> Nutrition Analytics
+        </h5>
+        <a href="{% url 'analytics' %}" class="btn btn-sm btn-outline-primary">
+            View all analytics <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Nutrition Status Distribution</h6>
+                    <div class="chart-container">
+                        <canvas id="dashboard-status-chart" aria-label="Nutrition status distribution chart" role="img"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Monthly Assessment Trend</h6>
+                    <div class="chart-container">
+                        <canvas id="dashboard-trend-chart" aria-label="Monthly assessment trend chart" role="img"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<section class="mb-4" aria-labelledby="recent-activity-title">
+    <h5 id="recent-activity-title" class="section-title mb-3">
+        <i class="bi bi-clock-history"></i> Recent Activity
+    </h5>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                        <h6 class="fw-bold mb-0">Recent Assessments</h6>
+                        <a href="{% url 'assessment_list' %}" class="btn btn-sm btn-outline-primary">View all</a>
+                    </div>
+                    {% if recent_assessments %}
+                        <ul class="list-group list-group-flush">
+                            {% for assessment in recent_assessments %}
+                                <li class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-center gap-2">
+                                        <div>
+                                            <strong>{{ assessment.resident_name }}</strong>
+                                            <div class="text-muted small">{{ assessment.assessment_date }}</div>
+                                        </div>
+                                        <span class="badge {% if assessment.nutritional_status == 'Normal' %}bg-success-subtle text-success{% elif assessment.nutritional_status == 'Underweight' %}bg-warning-subtle text-warning{% elif assessment.nutritional_status == 'Overweight' %}bg-info-subtle text-info{% else %}bg-danger-subtle text-danger{% endif %}">
+                                            {{ assessment.nutritional_status }}
+                                        </span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No recent assessments found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+                        <h6 class="fw-bold mb-0">Recent Follow-ups</h6>
+                        <a href="{% url 'followup_list' %}" class="btn btn-sm btn-outline-primary">View all</a>
+                    </div>
+                    {% if recent_followups %}
+                        <ul class="list-group list-group-flush">
+                            {% for followup in recent_followups %}
+                                <li class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-center gap-2">
+                                        <div>
+                                            <strong>{{ followup.resident_name }}</strong>
+                                            <div class="text-muted small">{{ followup.follow_up_date }}</div>
+                                        </div>
+                                        <span class="badge {% if followup.status == 'Pending' %}bg-warning-subtle text-warning{% elif followup.status == 'Completed' %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %}">
+                                            {{ followup.status }}
+                                        </span>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">No recent follow-ups found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <div class="row g-4 mt-2">
     <div class="col-lg-6">
@@ -258,11 +475,114 @@
     <div class="col-lg-6">
         <div class="card dashboard-card h-100">
             <div class="card-body">
+                <h5 class="fw-bold mb-3 text-primary">
+                    <i class="bi bi-list-check"></i> Follow-up Queue
+                </h5>
+                <a href="{% url 'followup_list' %}" class="btn btn-sm btn-outline-primary mb-3">View follow-ups</a>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <div class="border rounded p-2 text-center">
+                            <div class="small text-muted">Pending</div>
+                            <h4 class="mb-0 fw-bold text-warning" id="pending-followups">{{ pending_followups }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border rounded p-2 text-center">
+                            <div class="small text-muted">Completed</div>
+                            <h4 class="mb-0 fw-bold text-success" id="completed-followups">{{ completed_followups }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border rounded p-2 text-center">
+                            <div class="small text-muted">Referrals</div>
+                            <h4 class="mb-0 fw-bold text-danger" id="referral-followups">{{ referral_followups }}</h4>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card dashboard-card h-100">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3 text-danger">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Priority Cases
+                </h5>
+
+                <div class="table-responsive">
+                    <table class="table table-sm priority-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Resident</th>
+                                <th>Status</th>
+                                <th>BMI</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="priority-cases-body">
+                            {% if priority_cases %}
+                                {% for case in priority_cases %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ case.name }}</strong>
+                                            <div class="small text-muted">{{ case.date }}</div>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if case.status == 'Underweight' %}bg-warning-subtle text-warning{% elif case.status == 'Overweight' %}bg-info-subtle text-info{% else %}bg-danger-subtle text-danger{% endif %}">{{ case.status }}</span>
+                                        </td>
+                                        <td>{{ case.bmi }}</td>
+                                        <td>{{ case.action }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-muted">No priority cases at the moment.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card dashboard-card h-100">
+            <div class="card-body">
                 <h5 class="fw-bold mb-3 text-danger">
                     <i class="bi bi-exclamation-triangle-fill"></i> Nutrition Alerts
                 </h5>
+                <div class="mb-3">
+                    <h6 class="fw-bold text-danger mb-2">Decision Support</h6>
+                    <div id="decision-support-box">
+                        {% if decision_support %}
+                            <ul class="list-group list-group-flush">
+                                {% for message in decision_support %}
+                                    <li class="list-group-item px-0 py-2 text-muted small">{{ message }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="fw-bold text-success mb-2">Recommended Actions</h6>
+                    <div id="recommendations-box">
+                        {% if recommendations %}
+                            <ul class="list-group list-group-flush">
+                                {% for item in recommendations %}
+                                    <li class="list-group-item px-0 py-2 text-muted small">{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+
                 {% if urgent_alerts %}
-                    <ul class="list-group list-group-flush">
+                    <ul id="urgent-alerts-list" class="list-group list-group-flush mt-3">
                         {% for assessment in urgent_alerts %}
                             <li class="list-group-item px-0">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -276,13 +596,266 @@
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p class="text-muted mb-0">No urgent nutrition alerts at the moment.</p>
+                    <p id="urgent-alerts-empty" class="text-muted mb-0">No urgent nutrition alerts at the moment.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
 
+<section class="mb-4" aria-labelledby="nutrition-resources-title">
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+        <div>
+            <h5 id="nutrition-resources-title" class="section-title mb-1">
+                <i class="bi bi-journal-medical"></i> Nutrition Education Resources
+            </h5>
+            <p class="small text-muted mb-0">Printable guidance from DOST-FNRI and WHO.</p>
+        </div>
+    </div>
 
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card dashboard-card overflow-hidden">
+                <img class="nutrition-resource-image" src="https://www.fnri.dost.gov.ph/images/images/news/PP-Pinoy.png" alt="DOST-FNRI Pinggang Pinoy food guide poster">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-1">Pinggang Pinoy</h6>
+                    <p class="small text-muted mb-3">DOST-FNRI printable posters by age group.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm btn-outline-success" href="https://www.fnri.dost.gov.ph/images/sources/PinggangPinoy-Kids.pdf" target="_blank" rel="noopener noreferrer">View / Download Kids PDF</a>
+                        <a class="btn btn-sm btn-outline-success" href="https://www.fnri.dost.gov.ph/images/sources/PinggangPinoy-Teens.pdf" target="_blank" rel="noopener noreferrer">View / Download Teens PDF</a>
+                        <a class="btn btn-sm btn-outline-success" href="https://www.fnri.dost.gov.ph/images/sources/PinggangPinoy-Adult.pdf" target="_blank" rel="noopener noreferrer">View / Download Adults PDF</a>
+                        <a class="btn btn-sm btn-outline-success" href="https://www.fnri.dost.gov.ph/images/sources/PP-Older.pdf" target="_blank" rel="noopener noreferrer">View / Download Older Adults PDF</a>
+                    </div>
+                    <div class="small text-muted mt-2">Source: DOST-FNRI</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card dashboard-card overflow-hidden">
+                <img class="nutrition-resource-image" src="https://www.who.int/images/default-source/departments/nutrition/images/complementary-feeding.tmb-1024v.jpg?Culture=en&amp;sfvrsn=3018a52f_9" alt="WHO complementary-feeding resource image">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-1">Infant and Young Child Feeding</h6>
+                    <p class="small text-muted mb-3">WHO information and printable course handouts.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm btn-outline-primary" href="https://www.who.int/publications/i/item/WHO-HEP-NFS-21.41" target="_blank" rel="noopener noreferrer">View / Download WHO Handouts</a>
+                        <a class="btn btn-sm btn-outline-secondary" href="https://www.who.int/health-topics/complementary-feeding" target="_blank" rel="noopener noreferrer">WHO Resource Page</a>
+                    </div>
+                    <div class="small text-muted mt-2">Source: World Health Organization</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-4" aria-labelledby="physical-activity-resources-title">
+    <div class="mb-3">
+        <h5 id="physical-activity-resources-title" class="section-title mb-1">
+            <i class="bi bi-activity"></i> Physical Activity Resources
+        </h5>
+        <p class="small text-muted mb-0">Official WHO visual guidance for different age groups.</p>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-8 col-xl-6">
+            <div class="card dashboard-card overflow-hidden">
+                <img class="nutrition-resource-image" src="https://cdn.who.int/media/images/default-source/imported/behealthy/physical-activity.tmb-1920v.jpg?sfvrsn=3b0833eb_11" alt="People taking part in physical activity, from the WHO Be Healthy resource">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-1">WHO Physical Activity Guidance</h6>
+                    <p class="small text-muted mb-3">Infographic summarizes guidance for children, adults, and older adults.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm btn-outline-primary" href="https://cdn.who.int/media/images/default-source/health-topics/physical-activity/summary-infographic-guideline-on-physical-activity.jpg?sfvrsn=246f54b7_9" target="_blank" rel="noopener noreferrer">View / Download Infographic</a>
+                        <a class="btn btn-sm btn-outline-secondary" href="https://www.who.int/news-room/fact-sheets/detail/physical-activity" target="_blank" rel="noopener noreferrer">WHO Guidance</a>
+                    </div>
+                    <div class="small text-muted mt-2">Source: World Health Organization</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{ nutrition_status_chart_data|json_script:"dashboard-status-data" }}
+{{ assessment_trend_labels|json_script:"dashboard-trend-labels" }}
+{{ assessment_trend_counts|json_script:"dashboard-trend-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const liveDashboardUrl = '{% url "live_dashboard_stats" %}';
+    const statusChart = new Chart(document.getElementById('dashboard-status-chart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Normal', 'Underweight', 'Overweight', 'Obese'],
+            datasets: [{
+                data: JSON.parse(document.getElementById('dashboard-status-data').textContent),
+                backgroundColor: ['#2F6F73', '#ffc107', '#0d6efd', '#dc3545'],
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+            },
+        },
+    });
+    const trendChart = new Chart(document.getElementById('dashboard-trend-chart'), {
+        type: 'line',
+        data: {
+            labels: JSON.parse(document.getElementById('dashboard-trend-labels').textContent),
+            datasets: [{
+                label: 'Assessments',
+                data: JSON.parse(document.getElementById('dashboard-trend-data').textContent),
+                borderColor: '#2F6F73',
+                backgroundColor: 'rgba(47, 111, 115, 0.15)',
+                fill: true,
+                tension: 0.3,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } },
+            },
+        },
+    });
+
+    function updateDashboard(data) {
+        const metricMap = {
+            'total-population': data.total_population,
+            'total-male': data.total_male,
+            'total-female': data.total_female,
+            'senior-citizens': data.seniors,
+            'children-count': data.children,
+            'adolescents-count': data.adolescents,
+            'adults-count': data.adults,
+            'normal-count': data.normal,
+            'underweight-count': data.underweight,
+            'overweight-count': data.overweight,
+            'obese-count': data.obese,
+            'total-assessments': data.total_assessments,
+        };
+
+        Object.entries(metricMap).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        });
+
+        if (Array.isArray(data.nutrition_status_chart_data)) {
+            statusChart.data.datasets[0].data = data.nutrition_status_chart_data;
+            statusChart.update();
+        }
+        if (Array.isArray(data.assessment_trend_labels) &&
+            Array.isArray(data.assessment_trend_counts)) {
+            trendChart.data.labels = data.assessment_trend_labels;
+            trendChart.data.datasets[0].data = data.assessment_trend_counts;
+            trendChart.update();
+        }
+
+        const priorityBadge = document.getElementById('priority-badge');
+        const prioritySummary = document.getElementById('priority-summary');
+        const lastUpdated = document.getElementById('last-updated');
+
+        if (priorityBadge && data.priority_level) {
+            const level = String(data.priority_level).toLowerCase();
+            priorityBadge.textContent = data.priority_level;
+            priorityBadge.className = 'priority-badge priority-' + level;
+        }
+
+        if (prioritySummary && data.priority_summary) {
+            prioritySummary.textContent = data.priority_summary;
+        }
+
+        if (lastUpdated && data.last_updated) {
+            lastUpdated.textContent = data.last_updated;
+        }
+
+        const priorityCasesBody = document.getElementById('priority-cases-body');
+        if (priorityCasesBody && Array.isArray(data.priority_cases)) {
+            if (data.priority_cases.length > 0) {
+                priorityCasesBody.innerHTML = data.priority_cases.map(item => `
+                    <tr>
+                        <td>
+                            <strong>${item.name}</strong>
+                            <div class="small text-muted">${item.date}</div>
+                        </td>
+                        <td>
+                            <span class="badge ${item.status === 'Underweight' ? 'bg-warning-subtle text-warning' : item.status === 'Overweight' ? 'bg-info-subtle text-info' : 'bg-danger-subtle text-danger'}">${item.status}</span>
+                        </td>
+                        <td>${Number(item.bmi).toFixed(2)}</td>
+                        <td>${item.action}</td>
+                    </tr>
+                `).join('');
+            } else {
+                priorityCasesBody.innerHTML = '<tr><td colspan="4" class="text-muted">No priority cases at the moment.</td></tr>';
+            }
+        }
+
+        const decisionBox = document.getElementById('decision-support-box');
+        if (decisionBox && Array.isArray(data.decision_support)) {
+            decisionBox.innerHTML = '<ul class="list-group list-group-flush">' +
+                data.decision_support.map(message => '<li class="list-group-item px-0 py-2 text-muted small">' + message + '</li>').join('') +
+                '</ul>';
+        }
+
+        const recommendationsBox = document.getElementById('recommendations-box');
+        if (recommendationsBox && Array.isArray(data.recommendations)) {
+            recommendationsBox.innerHTML = '<ul class="list-group list-group-flush">' +
+                data.recommendations.map(item => '<li class="list-group-item px-0 py-2 text-muted small">' + item + '</li>').join('') +
+                '</ul>';
+        }
+
+        const pendingFollowups = document.getElementById('pending-followups');
+        const completedFollowups = document.getElementById('completed-followups');
+        const referralFollowups = document.getElementById('referral-followups');
+
+        if (pendingFollowups) pendingFollowups.textContent = data.pending_followups ?? 0;
+        if (completedFollowups) completedFollowups.textContent = data.completed_followups ?? 0;
+        if (referralFollowups) referralFollowups.textContent = data.referral_followups ?? 0;
+
+        const alertsList = document.getElementById('urgent-alerts-list');
+        const alertsEmpty = document.getElementById('urgent-alerts-empty');
+
+        if (Array.isArray(data.urgent_alerts) && data.urgent_alerts.length > 0) {
+            if (alertsList) {
+                alertsList.innerHTML = data.urgent_alerts.map(alert => `
+                    <li class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${alert.name}</strong>
+                                <div class="text-muted small">${alert.status} • ${alert.date}</div>
+                            </div>
+                            <span class="badge bg-danger-subtle text-danger">Alert</span>
+                        </div>
+                    </li>
+                `).join('');
+            }
+            if (alertsEmpty) alertsEmpty.remove();
+        } else {
+            if (alertsList) alertsList.innerHTML = '';
+            if (alertsEmpty) {
+                alertsEmpty.textContent = 'No urgent nutrition alerts at the moment.';
+            }
+        }
+    }
+
+    function fetchLiveDashboard() {
+        fetch(liveDashboardUrl, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Dashboard request failed with status ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => updateDashboard(data))
+        .catch(error => console.error('Live dashboard update failed:', error));
+    }
+
+    fetchLiveDashboard();
+    setInterval(fetchLiveDashboard, 15000);
+</script>
 
 {% endblock %}

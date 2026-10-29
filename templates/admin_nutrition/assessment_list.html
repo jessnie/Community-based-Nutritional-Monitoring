@@ -9,15 +9,6 @@
     </h3>
 
 
-    <a href="{% url 'followup_list' %}"
-       class="btn btn-primary">
-
-        <i class="bi bi-clipboard2-pulse"></i>
-
-        Follow-Up Monitoring
-
-    </a>
-
 </div>
 
 
@@ -49,9 +40,7 @@
 
                         <th>Assessed By</th>
 
-                        <th width="210">
-                            Actions
-                        </th>
+                        <th>Actions</th>
 
                     </tr>
 
@@ -206,38 +195,19 @@
 
                         </td>
 
-
                         <td>
-
-                            <a href="{% url 'add_followup' %}?assessment={{ assessment.id }}"
-                               class="btn btn-primary btn-sm mb-1">
-
-                                <i class="bi bi-clipboard-plus"></i>
-
-                                Follow-Up
-
+                            <a href="{% url 'delete_assessment' assessment.id %}?action=archive"
+                               class="btn btn-warning btn-sm mb-1"
+                               aria-label="Archive assessment"
+                               title="Archive assessment">
+                                <i class="bi bi-archive-fill" aria-hidden="true"></i>
                             </a>
-
-
-                            <a href="{% url 'edit_assessment' assessment.id %}"
-                               class="btn btn-warning btn-sm mb-1">
-
-                                <i class="bi bi-pencil"></i>
-
-                                Edit
-
+                            <a href="{% url 'delete_assessment' assessment.id %}?action=delete"
+                               class="btn btn-danger btn-sm mb-1"
+                               aria-label="Permanently delete assessment"
+                               title="Permanently delete assessment">
+                                <i class="bi bi-trash-fill" aria-hidden="true"></i>
                             </a>
-
-
-                            <a href="{% url 'delete_assessment' assessment.id %}"
-                               class="btn btn-danger btn-sm mb-1">
-
-                                <i class="bi bi-trash"></i>
-
-                                Delete
-
-                            </a>
-
                         </td>
 
                     </tr>

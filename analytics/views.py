@@ -201,42 +201,6 @@ def analytics_dashboard(request):
 
 
     # ==========================================
-    # RECENT ASSESSMENTS
-    # ==========================================
-
-    recent_assessments = (
-        assessments
-        .select_related(
-            'resident',
-            'assessed_by',
-            'rule'
-        )
-        .order_by(
-            '-assessment_date',
-            '-created_at'
-        )[:5]
-    )
-
-
-    # ==========================================
-    # RECENT FOLLOW-UPS
-    # ==========================================
-
-    recent_followups = (
-        followups
-        .select_related(
-            'assessment',
-            'assessment__resident',
-            'recorded_by'
-        )
-        .order_by(
-            '-follow_up_date',
-            '-created_at'
-        )[:5]
-    )
-
-
-    # ==========================================
     # CHART DATA
     # ==========================================
 
@@ -285,9 +249,6 @@ def analytics_dashboard(request):
         'referral_followups': referral_followups,
 
         'average_bmi': average_bmi,
-
-        'recent_assessments': recent_assessments,
-        'recent_followups': recent_followups,
 
         'months': months,
         'monthly_counts': monthly_counts,

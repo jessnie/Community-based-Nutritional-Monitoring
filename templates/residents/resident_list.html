@@ -86,10 +86,19 @@
 
     </a>
 
-    <a href="{% url 'delete_resident' resident.id %}"
+    <a href="{% url 'delete_resident' resident.id %}?action=archive"
+       class="btn btn-warning btn-sm"
+       aria-label="Archive resident"
+       title="Archive">
+
+        <i class="bi bi-archive-fill" aria-hidden="true"></i>
+
+    </a>
+
+    <a href="{% url 'delete_resident' resident.id %}?action=delete"
        class="btn btn-danger btn-sm"
-       aria-label="Delete resident"
-       title="Delete">
+       aria-label="Permanently delete resident"
+       title="Permanently Delete">
 
         <i class="bi bi-trash-fill" aria-hidden="true"></i>
 

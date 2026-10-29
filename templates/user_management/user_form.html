@@ -27,6 +27,9 @@
                     </label>
 
                     {{ form.username }}
+                    {% for error in form.username.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
 
                 </div>
 
@@ -34,11 +37,14 @@
 
                     <label class="form-label">
 
-                        Password
+                        Password {% if form.instance.pk %}<small class="text-muted">(leave blank to keep current password)</small>{% endif %}
 
                     </label>
 
                     {{ form.password }}
+                    {% for error in form.password.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
 
                 </div>
 
@@ -51,6 +57,9 @@
                     </label>
 
                     {{ form.first_name }}
+                    {% for error in form.first_name.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
 
                 </div>
 
@@ -63,6 +72,9 @@
                     </label>
 
                     {{ form.last_name }}
+                    {% for error in form.last_name.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
 
                 </div>
 
@@ -75,6 +87,9 @@
                     </label>
 
                     {{ form.email }}
+                    {% for error in form.email.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
 
                 </div>
 
@@ -89,10 +104,19 @@
                     <br>
 
                     {{ form.is_active }}
+                    {% for error in form.is_active.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
 
                 </div>
 
             </div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
 
             <button class="btn btn-success">
 

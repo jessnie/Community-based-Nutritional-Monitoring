@@ -2,179 +2,245 @@
 
 {% block content %}
 
-<h2 class="mb-4">Nutrition Reports</h2>
+<style>
+    .report-head {
+        background: linear-gradient(135deg, #275B5F 0%, #4E8588 100%);
+        border-radius: 18px;
+        color: white;
+        padding: 22px 24px;
+        margin-bottom: 24px;
+    }
 
-<!-- HEADER + PRINT BUTTON -->
-<div class="d-flex justify-content-between align-items-center mb-3">
+    .report-stat {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        height: 100%;
+    }
 
-    <h4 class="mb-0">Assessment Records</h4>
+    .report-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+    }
 
-    <button onclick="window.print()" class="btn btn-primary">
-        🖨 Print Report
-    </button>
+    .status-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 150px));
+        gap: 12px;
+        justify-content: start;
+    }
 
+    .status-summary-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 1;
+        width: 100%;
+        max-width: 150px;
+        padding: 12px;
+        border: 1px solid rgba(47, 111, 115, 0.12);
+        border-radius: 14px;
+        background: #f7faf9;
+        text-align: center;
+    }
+
+    .status-summary-tile h4 {
+        margin-bottom: 0;
+    }
+
+    html[data-theme="dark"] .status-summary-tile {
+        border-color: #3B4B4F;
+        background: #263438;
+    }
+
+    @media (max-width: 640px) {
+        .status-summary-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 135px));
+        }
+    }
+</style>
+
+<div class="report-head">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">Nutrition Reports</h2>
+            <p class="mb-0 opacity-75">Monitoring summary and decision support for staff review</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'export_pdf' %}{% if export_query %}?{{ export_query }}{% endif %}" class="btn btn-light text-success fw-semibold">
+                <i class="bi bi-filetype-pdf"></i> Export PDF
+            </a>
+            <a href="{% url 'export_excel' %}{% if export_query %}?{{ export_query }}{% endif %}" class="btn btn-outline-light">
+                <i class="bi bi-file-earmark-excel"></i> Export Excel
+            </a>
+            <button onclick="window.print()" class="btn btn-dark">
+                <i class="bi bi-printer"></i> Print
+            </button>
+        </div>
+    </div>
 </div>
 
-<!-- FILTERS -->
-<form method="GET" class="row g-2 mb-3">
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card report-stat">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted">Total Assessments</small>
+                    <h3 class="fw-bold mb-0">{{ total_reports }}</h3>
+                </div>
+                <div class="report-icon" style="background:#2F6F73"><i class="bi bi-clipboard2-pulse"></i></div>
+            </div>
+        </div>
+    </div>
 
-    <div class="col-md-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card report-stat">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted">This Month</small>
+                    <h3 class="fw-bold mb-0">{{ monthly_reports }}</h3>
+                </div>
+                <div class="report-icon" style="background:#0d6efd"><i class="bi bi-calendar-check"></i></div>
+            </div>
+        </div>
+    </div>
 
-        <select name="status" class="form-control">
+    <div class="col-lg-3 col-md-6">
+        <div class="card report-stat">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted">Pending Follow-ups</small>
+                    <h3 class="fw-bold mb-0 text-warning">{{ pending_followups }}</h3>
+                </div>
+                <div class="report-icon" style="background:#ffc107"><i class="bi bi-hourglass-split"></i></div>
+            </div>
+        </div>
+    </div>
 
+    <div class="col-lg-3 col-md-6">
+        <div class="card report-stat">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted">High Risk Cases</small>
+                    <h3 class="fw-bold mb-0 text-danger">{{ urgent_cases|length }}</h3>
+                </div>
+                <div class="report-icon" style="background:#dc3545"><i class="bi bi-exclamation-triangle"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="card border-0 shadow-sm mb-4" aria-labelledby="nutrition-status-summary-title">
+    <div class="card-body p-4">
+        <h5 id="nutrition-status-summary-title" class="fw-bold text-success mb-3">Nutrition Status Summary</h5>
+        <div class="status-summary-grid">
+            <div class="status-summary-tile">
+                <div class="small text-muted">Normal</div>
+                <h4 class="fw-bold text-success">{{ status_summary.Normal }}</h4>
+            </div>
+            <div class="status-summary-tile">
+                <div class="small text-muted">Underweight</div>
+                <h4 class="fw-bold text-warning">{{ status_summary.Underweight }}</h4>
+            </div>
+            <div class="status-summary-tile">
+                <div class="small text-muted">Overweight</div>
+                <h4 class="fw-bold text-info">{{ status_summary.Overweight }}</h4>
+            </div>
+            <div class="status-summary-tile">
+                <div class="small text-muted">Obese</div>
+                <h4 class="fw-bold text-danger">{{ status_summary.Obese }}</h4>
+            </div>
+        </div>
+    </div>
+</section>
+
+<form method="GET" class="row g-2 mb-4">
+    <div class="col-md-2">
+        <select name="status" class="form-select">
             <option value="">All Status</option>
-
-            <option value="Normal"
-                {% if status == "Normal" %}selected{% endif %}>
-                Normal
-            </option>
-
-            <option value="Underweight"
-                {% if status == "Underweight" %}selected{% endif %}>
-                Underweight
-            </option>
-
-            <option value="Overweight"
-                {% if status == "Overweight" %}selected{% endif %}>
-                Overweight
-            </option>
-
-            <option value="Obese"
-                {% if status == "Obese" %}selected{% endif %}>
-                Obese
-            </option>
-
+            <option value="Normal" {% if status == "Normal" %}selected{% endif %}>Normal</option>
+            <option value="Underweight" {% if status == "Underweight" %}selected{% endif %}>Underweight</option>
+            <option value="Overweight" {% if status == "Overweight" %}selected{% endif %}>Overweight</option>
+            <option value="Obese" {% if status == "Obese" %}selected{% endif %}>Obese</option>
         </select>
-
     </div>
-
-    <div class="col-md-4">
-
-        <input
-            type="text"
-            name="resident_name"
-            class="form-control"
-            placeholder="Search Resident by name"
-            value="{{ resident_name }}"
-        >
-
+    <div class="col-md-3">
+        <input type="text" name="resident_name" class="form-control" placeholder="Search resident by name" value="{{ resident_name }}">
     </div>
-
-    <div class="col-md-4">
-
-        <button class="btn btn-success w-100">
-
-            Filter
-
-        </button>
-
+    <div class="col-md-2">
+        <input type="date" name="date_from" class="form-control" aria-label="Start date" value="{{ date_from }}">
     </div>
-
+    <div class="col-md-2">
+        <input type="date" name="date_to" class="form-control" aria-label="End date" value="{{ date_to }}">
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-success w-100">Filter</button>
+    </div>
+    {% if date_error %}
+        <div class="col-12"><p class="text-danger small mb-0">Enter valid dates and make sure the start date is not after the end date.</p></div>
+    {% endif %}
 </form>
 
-<!-- REPORT TITLE -->
-<div class="text-center mb-3">
-
-    <h5>Community-Based Nutritional Monitoring System</h5>
-
-    <p class="mb-0">Nutrition Assessment Report</p>
-
-</div>
-
-<!-- TABLE -->
-<div class="card shadow-sm">
-
+<div class="card shadow-sm border-0">
     <div class="card-body">
-
-        <table class="table table-bordered table-hover">
-
-            <thead class="table-success">
-
-                <tr>
-
-                    <th>Date</th>
-                    <th>Resident</th>
-                    <th>Height (cm)</th>
-                    <th>Weight (kg)</th>
-                    <th>BMI</th>
-                    <th>Status</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for a in assessments %}
-
-                <tr>
-
-                    <td>{{ a.assessment_date }}</td>
-
-                    <td>
-                        {{ a.resident.first_name }}
-                        {{ a.resident.last_name }}
-                    </td>
-
-                    <td>{{ a.height }}</td>
-
-                    <td>{{ a.weight }}</td>
-
-                    <td>{{ a.bmi }}</td>
-
-                    <td>{{ a.nutritional_status }}</td>
-
-                </tr>
-
-                {% empty %}
-
-                <tr>
-
-                    <td colspan="6" class="text-center">
-
-                        No records found
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
+        <h5 class="fw-bold text-primary mb-3">Assessment Records</h5>
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered align-middle">
+                <thead class="table-success">
+                    <tr>
+                        <th>Date</th>
+                        <th>Resident</th>
+                        <th>Height (cm)</th>
+                        <th>Weight (kg)</th>
+                        <th>BMI</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in assessments %}
+                    <tr>
+                        <td>{{ a.assessment_date }}</td>
+                        <td>{{ a.resident.first_name }} {{ a.resident.last_name }}</td>
+                        <td>{{ a.height }}</td>
+                        <td>{{ a.weight }}</td>
+                        <td>{{ a.bmi }}</td>
+                        <td>
+                            {% if a.nutritional_status == 'Normal' %}
+                                <span class="badge bg-success">{{ a.nutritional_status }}</span>
+                            {% elif a.nutritional_status == 'Underweight' %}
+                                <span class="badge bg-warning text-dark">{{ a.nutritional_status }}</span>
+                            {% elif a.nutritional_status == 'Overweight' %}
+                                <span class="badge bg-info text-dark">{{ a.nutritional_status }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ a.nutritional_status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No records found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-
 </div>
 
-<!-- PRINT STYLE -->
 <style>
-
 @media print {
-
-    body {
-        background: white !important;
-    }
-
-    .sidebar,
-    .topbar,
-    form,
-    button {
-        display: none !important;
-    }
-
-    .card {
-        border: none !important;
-        box-shadow: none !important;
-    }
-
-    table {
-        font-size: 12px;
-    }
-
+    body { background: white !important; }
+    .sidebar, .topbar, form, .btn, .report-head .d-flex { display: none !important; }
+    .card { border: none !important; box-shadow: none !important; }
+    table { font-size: 12px; }
 }
-
 </style>
 
 {% endblock %}
