@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2>Archived Records</h2>
-            <p class="text-muted mb-0">Restore records or permanently remove them.</p>
+            <p class="text-muted mb-0">Restore or permanently delete records from admin records. Staff records are managed separately.</p>
         </div>
     </div>
 
@@ -18,9 +18,8 @@
     {% endif %}
 
     <div class="alert alert-warning">
-        Permanent deletion cannot be undone. Permanently deleting a resident also
-        deletes related assessments and follow-ups; permanently deleting an
-        assessment also deletes its follow-ups.
+        Permanent deletion removes records from admin records only. Staff
+        records and visibility are not affected.
     </div>
 
     <div class="card shadow-sm border-0">
@@ -51,27 +50,18 @@
                                     </button>
                                 </form>
                                 <form method="post" class="d-inline"
-                                      onsubmit="return confirm('Permanently delete this record? This cannot be undone.');">
+                                      onsubmit="return confirm('Are you sure you want to delete?');">
                                     {% csrf_token %}
                                     <input type="hidden" name="record_type" value="{{ record.record_type }}">
                                     <input type="hidden" name="record_id" value="{{ record.object_id }}">
                                     <input type="hidden" name="action" value="delete">
                                     <button type="submit"
                                             class="btn btn-sm btn-outline-danger"
-                                            aria-label="Permanently delete record"
-                                            title="Permanently delete record">
+                                            aria-label="Permanently delete record from admin records"
+                                            title="Permanently delete from admin records">
                                         <i class="bi bi-trash-fill" aria-hidden="true"></i>
                                     </button>
                                 </form>
-                                {% if record.includes_children %}
-                                    <small class="d-block text-muted mt-1">
-                                        Permanent deletion also removes related nutrition records.
-                                    </small>
-                                {% elif record.includes_followups %}
-                                    <small class="d-block text-muted mt-1">
-                                        Permanent deletion also removes related follow-ups.
-                                    </small>
-                                {% endif %}
                             </td>
                         </tr>
                     {% empty %}
@@ -85,5 +75,6 @@
             </table>
         </div>
     </div>
+    {% include "shared/pagination.html" %}
 </div>
 {% endblock %}

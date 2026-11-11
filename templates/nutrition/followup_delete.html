@@ -1,3 +1,4 @@
+
 {% extends base_template %}
 
 {% block content %}
@@ -8,32 +9,48 @@
 
         <div class="card shadow-sm border-0">
 
-            <div class="card-header bg-danger text-white">
+            <div class="card-header
+                {% if action == 'delete' %}
+                    bg-danger text-white
+                {% else %}
+                    bg-warning text-dark
+                {% endif %}">
 
                 <h4 class="mb-0">
 
                     <i class="bi bi-exclamation-triangle"></i>
 
-                    {% if action == 'delete' %}Permanently Delete Follow-Up Record{% else %}Archive Follow-Up Record{% endif %}
+                    {% if action == 'delete' %}
+
+                        {% if user.is_superuser %}Permanently Delete Follow-Up from Admin Records{% else %}Permanently Delete Follow-Up from Staff Records{% endif %}
+
+                    {% elif user.is_superuser %}
+
+                        Hide Follow-Up from Admin Lists
+
+                    {% else %}
+
+                        Hide Follow-Up from Staff Lists
+
+                    {% endif %}
 
                 </h4>
 
             </div>
 
-
             <div class="card-body p-4">
 
-                <div class="alert alert-warning">
+                <div class="alert {% if action == 'delete' %}alert-danger{% else %}alert-warning{% endif %}">
 
                     {% if action == 'delete' %}
-                        Permanently delete this follow-up record? This cannot be undone.
+                        Are you sure you want to delete?
                     {% else %}
-                        Archive this follow-up record? An admin can restore it
-                        later from Archived Records.
+                        Are you sure you want to archive?
                     {% endif %}
 
                 </div>
 
+                <hr>
 
                 <p>
 
@@ -44,7 +61,6 @@
 
                 </p>
 
-
                 <p>
 
                     <strong>Follow-Up Date:</strong>
@@ -53,7 +69,6 @@
 
                 </p>
 
-
                 <p>
 
                     <strong>Status:</strong>
@@ -61,7 +76,6 @@
                     {{ followup.status }}
 
                 </p>
-
 
                 {% if followup.notes %}
 
@@ -75,25 +89,37 @@
 
                 {% endif %}
 
-
-                <form method="post">
+                <form method="POST">
 
                     {% csrf_token %}
-                    <input type="hidden" name="action" value="{{ action }}">
 
+                    <input
+                        type="hidden"
+                        name="action"
+                        value="{{ action }}"
+                    >
 
-                    <button type="submit"
-                            class="btn {% if action == 'delete' %}btn-danger{% else %}btn-warning{% endif %}">
+                    <button
+                        type="submit"
+                        class="btn {% if action == 'delete' %}btn-danger{% else %}btn-warning{% endif %}">
 
-                        <i class="bi bi-trash"></i>
+                        {% if action == 'delete' %}
 
-                        {% if action == 'delete' %}Permanently Delete{% else %}Yes, Archive{% endif %}
+                            <i class="bi bi-trash-fill"></i>
+                            {% if user.is_superuser %}Permanently Delete from Admin Records{% else %}Permanently Delete from Staff Records{% endif %}
+
+                        {% else %}
+
+                            <i class="bi bi-archive-fill"></i>
+                            Archive Follow-Up
+
+                        {% endif %}
 
                     </button>
 
-
-                    <a href="{% url 'followup_list' %}"
-                       class="btn btn-secondary">
+                    <a
+                        href="{% url 'followup_list' %}"
+                        class="btn btn-secondary">
 
                         Cancel
 

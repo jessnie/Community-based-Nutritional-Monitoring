@@ -1,0 +1,38 @@
+<div class="text-center">
+    <p>
+        {% if action == 'delete' %}
+            Are you sure you want to delete?
+        {% else %}
+            Are you sure you want to archive?
+        {% endif %}
+    </p>
+
+    <div class="border rounded p-3 mb-3 text-start">
+        <p>
+            <strong>Resident:</strong>
+            {{ followup.assessment.resident.first_name }}
+            {{ followup.assessment.resident.last_name }}
+        </p>
+        <p><strong>Follow-Up Date:</strong> {{ followup.follow_up_date }}</p>
+        <p class="mb-0"><strong>Status:</strong> {{ followup.status }}</p>
+        {% if followup.notes %}
+            <p class="mt-2 mb-0"><strong>Notes:</strong> {{ followup.notes }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<form method="POST" action="{{ request.path }}"
+      class="modal-compact-confirm" data-ajax-modal-form>
+    {% csrf_token %}
+    <input type="hidden" name="action" value="{{ action }}">
+
+    <div class="modal-form-actions">
+        <button type="submit"
+                class="btn {% if action == 'delete' %}btn-danger{% else %}btn-warning{% endif %}">
+            {% if action == 'delete' %}Delete{% else %}Archive{% endif %}
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+        </button>
+    </div>
+</form>

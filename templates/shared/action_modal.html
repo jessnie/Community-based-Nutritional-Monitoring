@@ -1,0 +1,216 @@
+<div class="modal fade" id="action-modal" tabindex="-1"
+     aria-labelledby="action-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered action-modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="action-modal-title"></h5>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="action-modal-body"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .action-modal-dialog{
+        width:calc(100% - 2rem);
+        max-width:960px;
+    }
+
+    .cnms-success-toast{
+        position:fixed;
+        right:1.5rem;
+        bottom:1.5rem;
+        z-index:2000;
+        display:flex;
+        align-items:center;
+        gap:.6rem;
+        padding:.85rem 1.1rem;
+        border-radius:.5rem;
+        background:#2F6F73;
+        color:#fff;
+        box-shadow:0 .5rem 1.5rem rgba(0,0,0,.2);
+    }
+
+    #action-modal .modal-body form{
+        width:100%;
+        max-width:100%;
+        margin:0 auto;
+    }
+
+    #action-modal .modal-body .modal-compact-form{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:.5rem 1.25rem;
+        align-items:start;
+    }
+
+    #action-modal .modal-body .modal-compact-form p{
+        margin-bottom:1rem;
+        text-align:center;
+    }
+
+    #action-modal .modal-body .modal-compact-form p label{
+        display:block;
+        margin-bottom:.35rem;
+        font-weight:600;
+    }
+
+    #action-modal .modal-body .modal-compact-form p input,
+    #action-modal .modal-body .modal-compact-form p select,
+    #action-modal .modal-body .modal-compact-form p textarea{
+        width:100%;
+    }
+
+    #action-modal .modal-body .modal-compact-form p input,
+    #action-modal .modal-body .modal-compact-form p select{
+        text-align:center;
+    }
+
+    #action-modal .modal-body form button{
+        display:inline-block;
+    }
+
+    #action-modal .modal-body .modal-form-actions{
+        display:flex;
+        justify-content:center;
+        gap:.5rem;
+        flex-wrap:wrap;
+    }
+
+    #action-modal .modal-body .modal-compact-form .modal-form-actions{
+        grid-column:1 / -1;
+    }
+
+    #action-modal .modal-body .modal-compact-form .grid-span-two{
+        grid-column:1 / -1;
+    }
+
+    #action-modal .modal-body .modal-compact-confirm{
+        max-width:680px;
+        text-align:center;
+    }
+
+    @media(max-width:575.98px){
+        #action-modal .modal-body .modal-compact-form{
+            grid-template-columns:1fr;
+        }
+
+        #action-modal .modal-body .modal-compact-form .modal-form-actions{
+            grid-column:auto;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const modalElement = document.getElementById("action-modal");
+        if (!modalElement) {
+            return;
+        }
+
+        const modalBody = document.getElementById("action-modal-body");
+        const modalTitle = document.getElementById("action-modal-title");
+        document.body.append(modalElement);
+        const actionModal = bootstrap.Modal.getOrCreateInstance(modalElement);
+
+        const showError = (message) => {
+            modalBody.replaceChildren();
+            const alert = document.createElement("div");
+            alert.className = "alert alert-danger mb-0";
+            alert.setAttribute("role", "alert");
+            alert.textContent = message;
+            modalBody.append(alert);
+        };
+
+        const showSuccessToast = (message) => {
+            const toast = document.createElement("div");
+            toast.className = "cnms-success-toast";
+            toast.setAttribute("role", "status");
+            toast.setAttribute("aria-live", "polite");
+
+            const icon = document.createElement("i");
+            icon.className = "bi bi-check-circle-fill";
+            icon.setAttribute("aria-hidden", "true");
+
+            const text = document.createElement("span");
+            text.textContent = message;
+
+            toast.append(icon, text);
+            document.body.append(toast);
+            window.setTimeout(() => toast.remove(), 2200);
+        };
+
+        document.querySelectorAll("[data-ajax-modal]").forEach((link) => {
+            link.addEventListener("click", async (event) => {
+                event.preventDefault();
+                modalTitle.textContent = link.dataset.modalTitle || "Edit";
+                modalBody.innerHTML =
+                    '<div class="text-center py-4" role="status">Loading...</div>';
+                actionModal.show();
+
+                try {
+                    const response = await fetch(link.href, {
+                        headers: {"X-Requested-With": "XMLHttpRequest"},
+                    });
+                    if (!response.ok) {
+                        throw new Error(`Could not load form (${response.status}).`);
+                    }
+                    modalBody.innerHTML = await response.text();
+                } catch (error) {
+                    console.error(error);
+                    showError("Could not load this form. Please try again.");
+                }
+            });
+        });
+
+        modalBody.addEventListener("submit", async (event) => {
+            const form = event.target.closest("form[data-ajax-modal-form]");
+            if (!form) {
+                return;
+            }
+
+            event.preventDefault();
+            const submitButton = form.querySelector('[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+            }
+
+            try {
+                const formAction = form.getAttribute("action") || window.location.href;
+                const response = await fetch(formAction, {
+                    method: "POST",
+                    body: new FormData(form),
+                    headers: {"X-Requested-With": "XMLHttpRequest"},
+                });
+                const contentType = response.headers.get("content-type") || "";
+
+                if (response.ok && contentType.includes("application/json")) {
+                    const result = await response.json();
+                    if (result.message) {
+                        actionModal.hide();
+                        showSuccessToast(result.message);
+                        window.setTimeout(() => window.location.reload(), 1600);
+                    } else {
+                        window.location.reload();
+                    }
+                    return;
+                }
+
+                if (response.status === 400 && contentType.includes("text/html")) {
+                    modalBody.innerHTML = await response.text();
+                    return;
+                }
+
+                throw new Error(`Could not save this record (${response.status}).`);
+            } catch (error) {
+                console.error(error);
+                showError("Could not save this record. Please try again.");
+                if (submitButton) {
+                    submitButton.disabled = false;
+                }
+            }
+        });
+    });
+</script>

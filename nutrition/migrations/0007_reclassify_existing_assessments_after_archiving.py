@@ -2,6 +2,17 @@ from django.db import migrations
 
 
 def reclassify_existing_assessments(apps, schema_editor):
+    table_name = 'nutrition_followuprecord'
+    column_names = schema_editor.connection.introspection.get_table_description(
+        schema_editor.connection.cursor(),
+        table_name,
+    )
+    # The current model queries this later-added column during migration 0007.
+    if 'follow_up_method' not in {
+        column.name for column in column_names
+    }:
+        return
+
     from nutrition.models import NutritionAssessment
 
     database = schema_editor.connection.alias

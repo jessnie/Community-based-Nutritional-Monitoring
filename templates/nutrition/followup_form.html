@@ -84,6 +84,22 @@
 
                         </div>
 
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label fw-bold">
+                                Follow-Up Method
+                            </label>
+
+                            {{ form.follow_up_method }}
+
+                            {% for error in form.follow_up_method.errors %}
+                                <div class="text-danger small">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        </div>
+
                     </div>
 
 

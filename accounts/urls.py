@@ -3,6 +3,11 @@ from . import views
 
 
 urlpatterns = [
+    path(
+        'settings/',
+        views.account_settings,
+        name='account_settings',
+    ),
 
     path(
         'login/',

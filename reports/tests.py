@@ -71,11 +71,47 @@ class ReportFilteringTests(TestCase):
 			list(response.context['assessments'].values_list('pk', flat=True)),
 			[self.ada_match.pk],
 		)
+		self.assertContains(response, 'report-signature-line')
+		self.assertContains(response, 'Staff')
+		self.assertNotIn('reporter_name', response.context)
 		self.assertEqual(response.context['total_reports'], 1)
 		self.assertEqual(response.context['status_summary']['Overweight'], 1)
 		self.assertEqual(response.context['status_summary']['Normal'], 0)
+		self.assertEqual(response.context['pending_followups'], 1)
+		self.assertNotContains(response, '<QuerySet')
 		self.assertContains(response, 'class="status-summary-tile"')
 		self.assertNotContains(response, 'Priority Alerts')
+
+	def test_report_assessments_are_paginated_without_losing_filters(self):
+		for day in range(1, 11):
+			NutritionAssessment.objects.create(
+				resident=self.ada,
+				assessment_date=date(2026, 1, day),
+				height=170,
+				weight=65,
+			)
+
+		response = self.client.get(
+			reverse('report_dashboard'),
+			{'resident_name': 'Ada', 'page': 2},
+		)
+
+		self.assertEqual(response.context['page_obj'].number, 2)
+		self.assertEqual(response.context['page_obj'].paginator.count, 12)
+		self.assertEqual(len(response.context['page_obj']), 5)
+		self.assertContains(response, 'Page 2 of 3')
+		self.assertContains(response, 'resident_name=Ada')
+
+		admin = get_user_model().objects.create_superuser(
+			username='reportpaginationadmin',
+			password='test-password',
+		)
+		self.client.force_login(admin)
+		admin_response = self.client.get(
+			reverse('report_dashboard'),
+			{'resident_name': 'Ada', 'page': 2},
+		)
+		self.assertContains(admin_response, 'Page 2 of 3')
 
 	def test_excel_export_uses_the_same_filters_as_report(self):
 		response = self.client.get(reverse('export_excel'), self.report_filters())
@@ -84,14 +120,41 @@ class ReportFilteringTests(TestCase):
 		workbook = load_workbook(BytesIO(response.content), data_only=True)
 		worksheet = workbook['Nutrition Report']
 
-		self.assertEqual(worksheet.max_row, 6)
+		self.assertEqual(worksheet.max_row, 9)
 		self.assertEqual(worksheet['B6'].value, 'Ada Alpha')
+		self.assertIsNone(worksheet['A8'].value)
+		self.assertEqual(worksheet['B9'].value, 'Staff')
+		self.assertIsNotNone(worksheet['B8'].border.bottom.style)
 
 	def test_pdf_export_accepts_the_same_filters(self):
 		response = self.client.get(reverse('export_pdf'), self.report_filters())
 
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(response['Content-Type'], 'application/pdf')
+
+	def test_monthly_and_annual_print_reports_show_the_reporter(self):
+		for report_url in ('monthly_report', 'annual_report'):
+			with self.subTest(report=report_url):
+				response = self.client.get(reverse(report_url))
+
+				self.assertEqual(response.status_code, 200)
+				self.assertContains(response, 'report-signature-line')
+				self.assertContains(response, 'Staff')
+				self.assertNotIn('reporter_name', response.context)
+
+	def test_admin_report_assignatory_uses_administrator_role(self):
+		admin = get_user_model().objects.create_superuser(
+			username='reportadmin',
+			password='test-password',
+			first_name='Report',
+			last_name='Admin',
+		)
+		self.client.force_login(admin)
+
+		response = self.client.get(reverse('report_dashboard'))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Administrator')
 
 	def test_invalid_resident_id_returns_no_assessments(self):
 		filters = self.report_filters()

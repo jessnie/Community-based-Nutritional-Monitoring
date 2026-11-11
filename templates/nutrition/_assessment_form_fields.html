@@ -1,0 +1,51 @@
+<form method="POST" action="{{ request.path }}"
+      class="modal-compact-form" data-ajax-modal-form>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger grid-span-two">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <p>
+        <label for="{{ form.resident.id_for_label }}">Resident</label>
+        {{ form.resident }}
+        {% for error in form.resident.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <p>
+        <label for="{{ form.assessment_date.id_for_label }}">Assessment Date</label>
+        {{ form.assessment_date }}
+        {% for error in form.assessment_date.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <p>
+        <label for="{{ form.height.id_for_label }}">Height (cm)</label>
+        {{ form.height }}
+        {% for error in form.height.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <p>
+        <label for="{{ form.weight.id_for_label }}">Weight (kg)</label>
+        {{ form.weight }}
+        {% for error in form.weight.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <div class="modal-form-actions grid-span-two">
+        <button type="submit" class="btn btn-success">
+            {% if form.instance.pk %}Update{% else %}Save{% endif %}
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+        </button>
+    </div>
+</form>

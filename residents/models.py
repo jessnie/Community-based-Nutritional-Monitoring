@@ -86,27 +86,6 @@ class Resident(models.Model):
             )
         )
 
-    @property
-    def age_category(self):
-        """
-        Automatically determines the resident's age category.
-        """
-
-        if self.age <= 5:
-            return "Under Five"
-
-        elif self.age <= 12:
-            return "Child"
-
-        elif self.age <= 17:
-            return "Adolescent"
-
-        elif self.age <= 59:
-            return "Adult"
-
-        else:
-            return "Senior Citizen"
-
     def save(self, *args, **kwargs):
 
         if not self.resident_id:

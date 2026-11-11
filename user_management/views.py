@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 
 from .forms import UserForm
@@ -25,6 +26,7 @@ def user_list(request):
 
 @user_passes_test(admin_check, login_url="login")
 def add_user(request):
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
 
     if request.method == "POST":
 
@@ -33,6 +35,8 @@ def add_user(request):
         if form.is_valid():
 
             form.save()
+            if is_ajax:
+                return JsonResponse({"success": True})
 
             return redirect("user_list")
 
@@ -40,12 +44,23 @@ def add_user(request):
 
         form = UserForm()
 
+    if is_ajax:
+        return render(
+            request,
+            "user_management/_user_form_fields.html",
+            {
+                "form": form,
+                "is_modal": True,
+            },
+            status=400 if request.method == "POST" else 200,
+        )
+
     return render(
         request,
         "user_management/user_form.html",
         {
             "form": form,
-            "title": "Add User"
+            "title": "Create User Account"
         }
     )
 
@@ -53,14 +68,31 @@ def add_user(request):
 @user_passes_test(admin_check, login_url="login")
 def edit_user(request, pk):
     user = get_object_or_404(get_user_model(), pk=pk)
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest"
 
     if request.method == "POST":
         form = UserForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
+            if is_ajax:
+                return JsonResponse({
+                    "success": True,
+                    "message": "Update successfully",
+                })
             return redirect("user_list")
     else:
         form = UserForm(instance=user)
+
+    if is_ajax:
+        return render(
+            request,
+            "user_management/_user_form_fields.html",
+            {
+                "form": form,
+                "is_modal": True,
+            },
+            status=400 if request.method == "POST" else 200,
+        )
 
     return render(
         request,

@@ -8,6 +8,10 @@ from .models import (
 
 class NutritionAssessmentForm(forms.ModelForm):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['resident'].empty_label = 'Select Resident'
+
     class Meta:
         model = NutritionAssessment
 
@@ -56,6 +60,24 @@ class NutritionAssessmentForm(forms.ModelForm):
             'weight': 'Weight (kg)',
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        resident = cleaned_data.get('resident')
+        assessment_date = cleaned_data.get('assessment_date')
+
+        if (
+            resident
+            and assessment_date
+            and assessment_date < resident.birth_date
+        ):
+            self.add_error(
+                'assessment_date',
+                "Assessment date cannot be before the resident's date of birth. "
+                'Check the resident’s birth date or correct the assessment date.',
+            )
+
+        return cleaned_data
+
 
 class AssessmentChoiceField(forms.ModelChoiceField):
 
@@ -91,6 +113,7 @@ class FollowUpRecordForm(forms.ModelForm):
             'assessment',
             'follow_up_date',
             'status',
+            'follow_up_method',
             'notes',
             'next_follow_up_date',
         ]
@@ -105,6 +128,12 @@ class FollowUpRecordForm(forms.ModelForm):
             ),
 
             'status': forms.Select(
+                attrs={
+                    'class': 'form-select'
+                }
+            ),
+
+            'follow_up_method': forms.Select(
                 attrs={
                     'class': 'form-select'
                 }
@@ -133,6 +162,7 @@ class FollowUpRecordForm(forms.ModelForm):
             'assessment': 'Nutrition Assessment',
             'follow_up_date': 'Follow-Up Date',
             'status': 'Follow-Up Status',
+            'follow_up_method': 'Follow-Up Method',
             'notes': 'Notes',
             'next_follow_up_date': 'Next Follow-Up Date',
         }
@@ -149,3 +179,10 @@ class FollowUpRecordForm(forms.ModelForm):
                 '-created_at'
             )
         )
+        self.fields['assessment'].empty_label = (
+            'Select Nutrition Assessment'
+        )
+        self.fields['follow_up_method'].choices = [
+            ('', 'Select Follow-Up Method'),
+            *FollowUpRecord.METHOD_CHOICES,
+        ]

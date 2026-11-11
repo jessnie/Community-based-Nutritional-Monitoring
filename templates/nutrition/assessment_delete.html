@@ -1,3 +1,4 @@
+
 {% extends 'base_staff.html' %}
 
 {% block content %}
@@ -8,10 +9,23 @@
 
         <div class="card shadow border-0">
 
-            <div class="card-header {% if action == 'delete' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">
+            <div class="card-header
+                {% if action == 'delete' %}
+                    bg-danger text-white
+                {% else %}
+                    bg-warning text-dark
+                {% endif %}">
 
                 <h4 class="mb-0">
-                    {% if action == 'delete' %}Permanently Delete Nutrition Assessment{% else %}Archive Nutrition Assessment{% endif %}
+
+                    {% if action == 'delete' %}
+                        Permanently Delete Assessment from Staff Records
+                    {% elif user.is_superuser %}
+                        Hide Assessment from Admin Lists
+                    {% else %}
+                        Hide Assessment from Staff Lists
+                    {% endif %}
+
                 </h4>
 
             </div>
@@ -20,61 +34,52 @@
 
                 <p class="fs-5">
 
-                    {% if action == 'delete' %}
-                        Permanently delete this assessment? This cannot be undone
-                        and will also delete its follow-up records.
-                    {% else %}
-                        Archive this nutrition assessment? An admin can restore it
-                        later from Archived Records.
-                    {% endif %}
+                    {% if action == 'delete' %}Are you sure you want to delete?{% else %}Are you sure you want to archive?{% endif %}
 
                 </p>
 
                 <hr>
 
                 <p>
-
                     <strong>Resident:</strong>
-
                     {{ assessment.resident.first_name }}
                     {{ assessment.resident.last_name }}
-
                 </p>
 
                 <p>
-
                     <strong>Assessment Date:</strong>
-
                     {{ assessment.assessment_date }}
-
                 </p>
 
                 <p>
-
                     <strong>Status:</strong>
-
                     {{ assessment.nutritional_status }}
-
                 </p>
 
                 <form method="POST">
 
                     {% csrf_token %}
-                    <input type="hidden" name="action" value="{{ action }}">
+
+                    <input type="hidden"
+                           name="action"
+                           value="{{ action }}">
 
                     <button
                         type="submit"
                         class="btn {% if action == 'delete' %}btn-danger{% else %}btn-warning{% endif %}">
 
-                        <i class="bi bi-trash-fill"></i>
-
-                        {% if action == 'delete' %}Permanently Delete{% else %}Archive{% endif %}
+                        {% if action == 'delete' %}
+                            <i class="bi bi-trash-fill"></i>
+                            Permanently Delete from Staff Records
+                        {% else %}
+                            <i class="bi bi-archive-fill"></i>
+                            Archive Assessment
+                        {% endif %}
 
                     </button>
 
-                    <a
-                        href="{% url 'assessment_list' %}"
-                        class="btn btn-secondary">
+                    <a href="{% url 'assessment_list' %}"
+                       class="btn btn-secondary">
 
                         Cancel
 

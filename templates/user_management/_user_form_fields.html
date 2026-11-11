@@ -1,0 +1,96 @@
+<form method="POST" action="{{ request.path }}" data-user-account-form>
+    {% csrf_token %}
+
+    <div class="user-account-fields">
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            {{ form.username }}
+            {% for error in form.username.errors %}
+                <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">
+                Password
+                {% if form.instance.pk %}
+                    <small class="text-muted">(leave blank to keep current password)</small>
+                {% endif %}
+            </label>
+            {{ form.password }}
+            {% for error in form.password.errors %}
+                <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">First Name</label>
+            {{ form.first_name }}
+            {% for error in form.first_name.errors %}
+                <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Last Name</label>
+            {{ form.last_name }}
+            {% for error in form.last_name.errors %}
+                <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            {{ form.email }}
+            {% for error in form.email.errors %}
+                <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Active</label>
+            <br>
+            {{ form.is_active }}
+            {% for error in form.is_active.errors %}
+                <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-center gap-2">
+        <button type="submit" class="btn btn-success">
+            {% if form.instance.pk %}Update{% else %}Create Account{% endif %}
+        </button>
+        {% if is_modal %}
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+            </button>
+        {% else %}
+            <a href="{% url 'user_list' %}" class="btn btn-secondary">Cancel</a>
+        {% endif %}
+    </div>
+</form>
+
+<style>
+    .user-account-fields{
+        width:100%;
+        max-width:440px;
+        margin:0 auto;
+    }
+
+    .user-account-fields .form-label{
+        display:block;
+        text-align:center;
+        font-weight:600;
+    }
+
+    .user-account-fields .form-control{
+        text-align:center;
+    }
+</style>

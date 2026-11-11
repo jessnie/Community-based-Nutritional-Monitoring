@@ -1,0 +1,14 @@
+<form method="POST" action="{{ request.path }}"
+      class="modal-compact-form" data-ajax-modal-form>
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <div class="modal-form-actions">
+        <button type="submit" class="btn btn-success">
+            {% if form.instance.pk %}Update{% else %}Save{% endif %}
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+        </button>
+    </div>
+</form>

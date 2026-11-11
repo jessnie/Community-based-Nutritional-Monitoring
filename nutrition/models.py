@@ -653,6 +653,12 @@ class FollowUpRecord(models.Model):
         ('For Referral', 'For Referral'),
     ]
 
+    METHOD_CHOICES = [
+        ('Health Center', 'Health Center'),
+        ('Home Visit', 'Home Visit'),
+        ('Call/Message', 'Call/Message'),
+    ]
+
     assessment = models.ForeignKey(
         NutritionAssessment,
         on_delete=models.CASCADE,
@@ -675,6 +681,13 @@ class FollowUpRecord(models.Model):
         max_length=20,
         choices=STATUS_CHOICES,
         default='Pending'
+    )
+
+    follow_up_method = models.CharField(
+        max_length=20,
+        choices=METHOD_CHOICES,
+        blank=True,
+        default=''
     )
 
     notes = models.TextField(

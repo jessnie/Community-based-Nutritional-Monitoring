@@ -49,3 +49,81 @@ class ActivityLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.action}"
+
+
+class StaffArchivedRecord(models.Model):
+
+    RECORD_TYPES = [
+        ('resident', 'Resident'),
+        ('assessment', 'Nutrition Assessment'),
+        ('followup', 'Follow-Up Record'),
+    ]
+
+    record_type = models.CharField(max_length=20, choices=RECORD_TYPES)
+    record_id = models.PositiveBigIntegerField()
+    archived_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    archived_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['record_type', 'record_id'],
+                name='unique_staff_archived_record',
+            ),
+        ]
+
+
+class AdminArchivedRecord(models.Model):
+
+    RECORD_TYPES = StaffArchivedRecord.RECORD_TYPES
+
+    record_type = models.CharField(max_length=20, choices=RECORD_TYPES)
+    record_id = models.PositiveBigIntegerField()
+    archived_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    archived_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['record_type', 'record_id'],
+                name='unique_admin_archived_record',
+            ),
+        ]
+
+
+class RoleDeletedRecord(models.Model):
+
+    ROLE_CHOICES = [
+        ('staff', 'Staff'),
+        ('admin', 'Admin'),
+    ]
+    RECORD_TYPES = StaffArchivedRecord.RECORD_TYPES
+
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    record_type = models.CharField(max_length=20, choices=RECORD_TYPES)
+    record_id = models.PositiveBigIntegerField()
+    deleted_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    deleted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['role', 'record_type', 'record_id'],
+                name='unique_role_deleted_record',
+            ),
+        ]

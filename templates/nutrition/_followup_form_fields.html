@@ -1,0 +1,81 @@
+<form method="POST" action="{{ request.path }}"
+      class="modal-compact-form" data-ajax-modal-form>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <p>
+        <label for="{{ form.assessment.id_for_label }}">Nutrition Assessment</label>
+        {{ form.assessment }}
+        {% for error in form.assessment.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <p>
+        <label for="{{ form.follow_up_date.id_for_label }}">Follow-Up Date</label>
+        {{ form.follow_up_date }}
+        {% for error in form.follow_up_date.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <p>
+        <label for="{{ form.status.id_for_label }}">Follow-Up Status</label>
+        {{ form.status }}
+        {% for error in form.status.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <p>
+        <label for="{{ form.follow_up_method.id_for_label }}">Follow-Up Method</label>
+        {{ form.follow_up_method }}
+        {% for error in form.follow_up_method.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <p>
+        <label for="{{ form.next_follow_up_date.id_for_label }}">Next Follow-Up Date</label>
+        {{ form.next_follow_up_date }}
+        {% for error in form.next_follow_up_date.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <p class="grid-span-two">
+        <label for="{{ form.notes.id_for_label }}">Notes</label>
+        {{ form.notes }}
+        <small class="form-text">
+            Record observations, actions taken, counseling, monitoring, or referral details.
+        </small>
+        {% for error in form.notes.errors %}
+            <span class="text-danger small">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+    <div class="modal-form-actions grid-span-two">
+        <button type="submit" class="btn btn-success">
+            {% if form.instance.pk %}Update{% else %}Save{% endif %}
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+        </button>
+    </div>
+</form>
+
+<style>
+    #action-modal .modal-compact-form .grid-span-two{
+        grid-column:1 / -1;
+    }
+
+    #action-modal .modal-compact-form textarea{
+        width:100%;
+        text-align:left;
+    }
+</style>

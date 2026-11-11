@@ -1,13 +1,11 @@
+
 {% extends 'base_staff.html' %}
 
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
 
-    <h3>
-        Nutrition Assessment
-    </h3>
-
+    <h3>Nutrition Assessment</h3>
 
     <div>
 
@@ -15,17 +13,15 @@
            class="btn btn-primary">
 
             <i class="bi bi-clipboard2-pulse"></i>
-
             Follow-Up Monitoring
 
         </a>
 
-
         <a href="{% url 'add_assessment' %}"
-           class="btn btn-success">
+           class="btn btn-success"
+           data-ajax-modal data-modal-title="Add Nutrition Assessment">
 
             <i class="bi bi-plus-circle"></i>
-
             Add Assessment
 
         </a>
@@ -33,7 +29,6 @@
     </div>
 
 </div>
-
 
 <div class="card shadow-sm border-0">
 
@@ -46,64 +41,43 @@
                 <thead class="table-success">
 
                     <tr>
-
                         <th>Resident</th>
-
                         <th>Date</th>
-
                         <th>Measurements</th>
-
                         <th>BMI</th>
-
                         <th>Status</th>
-
                         <th>Monitoring Flag</th>
-
-                        <th>Rule Applied</th>
-
                         <th>Assessed By</th>
-
                         <th>Remarks / Intervention</th>
-
-                        <th width="210">
-                            Actions
-                        </th>
-
+                        <th width="210">Actions</th>
                     </tr>
 
                 </thead>
 
-
                 <tbody>
 
-                    {% for assessment in assessments %}
+                    {% for assessment in page_obj %}
 
                     <tr>
 
                         <td>
 
                             <strong>
-
                                 {{ assessment.resident.first_name }}
                                 {{ assessment.resident.last_name }}
-
                             </strong>
 
                             <br>
 
                             <small class="text-muted">
-
                                 {{ assessment.resident.resident_id }}
-
                             </small>
 
                         </td>
 
-
                         <td>
                             {{ assessment.assessment_date }}
                         </td>
-
 
                         <td>
 
@@ -117,98 +91,57 @@
 
                         </td>
 
-
                         <td>
-
-                            <strong>
-                                {{ assessment.bmi }}
-                            </strong>
-
+                            <strong>{{ assessment.bmi }}</strong>
                         </td>
-
 
                         <td>
 
                             {% if assessment.nutritional_status == "Normal" %}
 
                                 <span class="badge bg-success">
-
                                     {{ assessment.nutritional_status }}
-
                                 </span>
 
                             {% elif assessment.nutritional_status == "Underweight" %}
 
                                 <span class="badge bg-warning text-dark">
-
                                     {{ assessment.nutritional_status }}
-
                                 </span>
 
                             {% elif assessment.nutritional_status == "Overweight" %}
 
                                 <span class="badge bg-info text-dark">
-
                                     {{ assessment.nutritional_status }}
-
                                 </span>
 
                             {% else %}
 
                                 <span class="badge bg-danger">
-
                                     {{ assessment.nutritional_status }}
-
                                 </span>
 
                             {% endif %}
 
                         </td>
-
 
                         <td>
 
                             {% if assessment.monitoring_flag == "Routine Monitoring" %}
 
                                 <span class="badge bg-success">
-
                                     {{ assessment.monitoring_flag }}
-
                                 </span>
 
                             {% else %}
 
                                 <span class="badge bg-warning text-dark">
-
                                     {{ assessment.monitoring_flag }}
-
                                 </span>
 
                             {% endif %}
 
                         </td>
-
-
-                        <td>
-
-                            {% if assessment.rule %}
-
-                                <span class="badge bg-secondary">
-
-                                    {{ assessment.rule.status_name }}
-
-                                </span>
-
-                            {% else %}
-
-                                <span class="text-muted">
-                                    No rule
-                                </span>
-
-                            {% endif %}
-
-                        </td>
-
 
                         <td>
 
@@ -225,7 +158,6 @@
                             {% endif %}
 
                         </td>
-
 
                         <td style="min-width: 280px;">
 
@@ -245,55 +177,56 @@
 
                         </td>
 
-
                         <td>
 
                             <a href="{% url 'add_followup' %}?assessment={{ assessment.id }}"
-                               class="btn btn-primary btn-sm mb-1">
+                               class="btn btn-primary btn-sm mb-1"
+                               data-ajax-modal data-modal-title="Add Follow-Up"
+                               title="Follow-Up">
 
                                 <i class="bi bi-clipboard-plus"></i>
 
-                                Follow-Up
-
                             </a>
-
 
                             <a href="{% url 'edit_assessment' assessment.id %}"
                                class="btn btn-warning btn-sm mb-1"
-                               aria-label="Edit assessment"
-                               title="Edit assessment">
-                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                               data-ajax-modal data-modal-title="Edit Nutrition Assessment"
+                               title="Edit Assessment">
+
+                                <i class="bi bi-pencil-square"></i>
+
                             </a>
 
-
                             <a href="{% url 'delete_assessment' assessment.id %}?action=archive"
-                               class="btn btn-warning btn-sm mb-1"
+                               class="btn btn-secondary btn-sm mb-1"
+                               data-ajax-modal data-modal-title="Archive Nutrition Assessment"
                                aria-label="Archive assessment"
-                               title="Archive assessment">
-                                <i class="bi bi-archive-fill" aria-hidden="true"></i>
+                               title="Archive Assessment">
+
+                                <i class="bi bi-archive-fill"></i>
+
                             </a>
 
                             <a href="{% url 'delete_assessment' assessment.id %}?action=delete"
                                class="btn btn-danger btn-sm mb-1"
-                               aria-label="Permanently delete assessment"
-                               title="Permanently delete assessment">
-                                <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                               data-ajax-modal data-modal-title="Delete Nutrition Assessment"
+                               aria-label="Delete assessment"
+                               title="Delete Assessment">
+
+                                <i class="bi bi-trash-fill"></i>
+
                             </a>
 
                         </td>
 
                     </tr>
 
-
                     {% empty %}
 
                     <tr>
 
-                        <td colspan="10"
-                            class="text-center">
-
+                        <td colspan="9" class="text-center">
                             No assessments found.
-
                         </td>
 
                     </tr>
@@ -309,5 +242,9 @@
     </div>
 
 </div>
+
+{% include "shared/pagination.html" %}
+
+{% include "shared/action_modal.html" %}
 
 {% endblock %}

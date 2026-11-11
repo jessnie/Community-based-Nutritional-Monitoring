@@ -1,14 +1,23 @@
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import (
     render,
     redirect,
     get_object_or_404,
 )
-from django.utils import timezone
 
 from accounts.decorators import staff_required
+from residents.models import Resident
+from activity_logs.models import (
+    ActivityLog,
+    AdminArchivedRecord,
+    RoleDeletedRecord,
+    StaffArchivedRecord,
+)
+from activity_logs.utils import exclude_role_archived
 from .forms import (
     NutritionAssessmentForm,
     FollowUpRecordForm,
@@ -18,8 +27,6 @@ from .models import (
     NutritionAssessment,
     FollowUpRecord,
 )
-
-from activity_logs.models import ActivityLog
 
 
 def get_template(request, staff_template, admin_template):
@@ -38,6 +45,16 @@ def get_base_template(request):
     return 'base_staff.html'
 
 
+def _visible_assessments(request):
+    role = 'admin' if request.user.is_superuser else 'staff'
+    return exclude_role_archived(NutritionAssessment.objects.all(), role)
+
+
+def _visible_followups(request):
+    role = 'admin' if request.user.is_superuser else 'staff'
+    return exclude_role_archived(FollowUpRecord.objects.all(), role)
+
+
 # =========================================================
 # NUTRITION ASSESSMENT
 # =========================================================
@@ -46,7 +63,7 @@ def get_base_template(request):
 def assessment_list(request):
 
     assessments = (
-        NutritionAssessment.objects
+        _visible_assessments(request)
         .select_related(
             'resident',
             'assessed_by',
@@ -58,8 +75,14 @@ def assessment_list(request):
         )
     )
 
+    page_obj = Paginator(assessments, 5).get_page(
+        request.GET.get('page')
+    )
+
     context = {
-        'assessments': assessments
+        'assessments': assessments,
+        'page_obj': page_obj,
+        'pagination_aria_label': 'Nutrition assessment pages',
     }
 
     return render(
@@ -78,6 +101,8 @@ def add_assessment(request):
 
     if request.user.is_superuser:
         return redirect('assessment_list')
+
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
     if request.method == 'POST':
 
@@ -108,6 +133,8 @@ def add_assessment(request):
                 )
             )
 
+            if is_ajax:
+                return JsonResponse({'success': True})
             return redirect(
                 'assessment_list'
             )
@@ -116,10 +143,23 @@ def add_assessment(request):
 
         form = NutritionAssessmentForm()
 
+    form.fields['resident'].queryset = exclude_role_archived(
+        Resident.objects.all(),
+        'staff',
+    )
+
     context = {
         'form': form,
         'title': 'Add Nutrition Assessment'
     }
+
+    if is_ajax:
+        return render(
+            request,
+            'nutrition/_assessment_form_fields.html',
+            context,
+            status=400 if request.method == 'POST' else 200,
+        )
 
     return render(
         request,
@@ -135,9 +175,10 @@ def edit_assessment(request, pk):
         return redirect('assessment_list')
 
     assessment = get_object_or_404(
-        NutritionAssessment,
+        _visible_assessments(request),
         pk=pk
     )
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
     if request.method == 'POST':
 
@@ -173,9 +214,12 @@ def edit_assessment(request, pk):
                 )
             )
 
-            return redirect(
-                'assessment_list'
-            )
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Update successfully',
+                })
+            return redirect('assessment_list')
 
     else:
 
@@ -188,6 +232,14 @@ def edit_assessment(request, pk):
         'title': 'Edit Nutrition Assessment'
     }
 
+    if is_ajax:
+        return render(
+            request,
+            'nutrition/_assessment_form_fields.html',
+            context,
+            status=400 if request.method == 'POST' else 200,
+        )
+
     return render(
         request,
         get_template(
@@ -199,11 +251,12 @@ def edit_assessment(request, pk):
     )
 
 
+
 @login_required(login_url='login')
 def delete_assessment(request, pk):
 
     assessment = get_object_or_404(
-        NutritionAssessment,
+        _visible_assessments(request),
         pk=pk
     )
 
@@ -211,6 +264,8 @@ def delete_assessment(request, pk):
         'action',
         request.GET.get('action', 'archive')
     )
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
     if action not in {'archive', 'delete'}:
         return redirect('assessment_list')
 
@@ -222,36 +277,86 @@ def delete_assessment(request, pk):
         )
 
         with transaction.atomic():
+            role = 'admin' if request.user.is_superuser else 'staff'
+            archive_model = (
+                AdminArchivedRecord
+                if role == 'admin'
+                else StaffArchivedRecord
+            )
+
             if action == 'delete':
+                followup_ids = FollowUpRecord.all_objects.filter(
+                    assessment=assessment
+                ).values_list('pk', flat=True)
+                related_markers = (
+                    Q(record_type='assessment', record_id=assessment.pk)
+                    | Q(record_type='followup', record_id__in=followup_ids)
+                )
+                archive_model.objects.filter(related_markers).delete()
+                RoleDeletedRecord.objects.get_or_create(
+                    role=role,
+                    record_type='assessment',
+                    record_id=assessment.pk,
+                    defaults={'deleted_by': request.user},
+                )
                 ActivityLog.objects.create(
                     user=request.user,
-                    role='Admin' if request.user.is_superuser else 'Staff',
+                    role='Admin' if role == 'admin' else 'Staff',
                     action='Permanently Delete Record',
                     description=(
                         f"Permanently deleted nutrition assessment "
-                        f"for {resident_name} and related follow-ups."
+                        f"for {resident_name} from {role} records, "
+                        "including related follow-ups."
                     ),
                 )
-                assessment.delete()
-            else:
+
+            elif role == 'admin':
+
                 ActivityLog.objects.create(
                     user=request.user,
-                    role='Admin' if request.user.is_superuser else 'Staff',
+                    role='Admin',
                     action='Archive Record',
                     description=(
-                        f"Archived nutrition assessment "
-                        f"for {resident_name}"
+                        f"Archived nutrition assessment for {resident_name}"
                     )
                 )
 
-                archived_at = timezone.now()
-                NutritionAssessment.all_objects.filter(pk=assessment.pk).update(
-                    archived_at=archived_at,
-                    updated_at=archived_at,
+                archive_model.objects.get_or_create(
+                    record_type='assessment',
+                    record_id=assessment.pk,
+                    defaults={'archived_by': request.user},
                 )
 
-        return redirect(
-            'assessment_list'
+            else:
+
+                ActivityLog.objects.create(
+                    user=request.user,
+                    role='Staff',
+                    action='Archive Record',
+                    description=(
+                        f"Removed nutrition assessment for {resident_name} "
+                        "from staff lists."
+                    ),
+                )
+
+                archive_model.objects.get_or_create(
+                    record_type='assessment',
+                    record_id=assessment.pk,
+                    defaults={'archived_by': request.user},
+                )
+
+        if is_ajax:
+            return JsonResponse({'success': True})
+        return redirect('assessment_list')
+
+    if is_ajax:
+        return render(
+            request,
+            'nutrition/_assessment_delete_confirmation.html',
+            {
+                'assessment': assessment,
+                'action': action,
+            },
         )
 
     return render(
@@ -266,6 +371,7 @@ def delete_assessment(request, pk):
             'action': action,
         }
     )
+
 
 
 # =========================================================
@@ -286,7 +392,7 @@ def followup_list(request):
     ).strip()
 
     followups = (
-        FollowUpRecord.objects
+        _visible_followups(request)
         .select_related(
             'assessment',
             'assessment__resident',
@@ -333,32 +439,40 @@ def followup_list(request):
             status=status_filter
         )
 
+    page_obj = Paginator(followups, 5).get_page(
+        request.GET.get('page')
+    )
+
     context = {
 
-        'followups': followups,
+        'followups': page_obj,
+
+        'page_obj': page_obj,
+
+        'pagination_aria_label': 'Follow-up monitoring pages',
 
         'search': search,
 
         'status_filter': status_filter,
 
         'total_followups': (
-            FollowUpRecord.objects.count()
+            _visible_followups(request).count()
         ),
 
         'pending_count': (
-            FollowUpRecord.objects
+            _visible_followups(request)
             .filter(status='Pending')
             .count()
         ),
 
         'completed_count': (
-            FollowUpRecord.objects
+            _visible_followups(request)
             .filter(status='Completed')
             .count()
         ),
 
         'referral_count': (
-            FollowUpRecord.objects
+            _visible_followups(request)
             .filter(status='For Referral')
             .count()
         ),
@@ -381,6 +495,7 @@ def add_followup(request):
     if request.user.is_superuser:
         return redirect('followup_list')
 
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
     selected_assessment = (
         request.GET.get('assessment')
     )
@@ -390,6 +505,7 @@ def add_followup(request):
         form = FollowUpRecordForm(
             request.POST
         )
+        form.fields['assessment'].queryset = _visible_assessments(request)
 
         if form.is_valid():
 
@@ -403,6 +519,8 @@ def add_followup(request):
 
             followup.save()
 
+            if is_ajax:
+                return JsonResponse({'success': True})
             return redirect(
                 'followup_list'
             )
@@ -420,6 +538,7 @@ def add_followup(request):
         form = FollowUpRecordForm(
             initial=initial
         )
+        form.fields['assessment'].queryset = _visible_assessments(request)
 
     context = {
 
@@ -431,6 +550,14 @@ def add_followup(request):
             get_base_template(request)
         ),
     }
+
+    if is_ajax:
+        return render(
+            request,
+            'nutrition/_followup_form_fields.html',
+            context,
+            status=400 if request.method == 'POST' else 200,
+        )
 
     return render(
         request,
@@ -446,9 +573,10 @@ def edit_followup(request, pk):
         return redirect('followup_list')
 
     followup = get_object_or_404(
-        FollowUpRecord,
+        _visible_followups(request),
         pk=pk
     )
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
 
     if request.method == 'POST':
 
@@ -473,6 +601,11 @@ def edit_followup(request, pk):
 
             followup.save()
 
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Update successfully',
+                })
             return redirect(
                 'followup_list'
             )
@@ -496,6 +629,14 @@ def edit_followup(request, pk):
         ),
     }
 
+    if is_ajax:
+        return render(
+            request,
+            'nutrition/_followup_form_fields.html',
+            context,
+            status=400 if request.method == 'POST' else 200,
+        )
+
     return render(
         request,
         'nutrition/followup_form.html',
@@ -503,11 +644,12 @@ def edit_followup(request, pk):
     )
 
 
+
 @login_required(login_url='login')
 def delete_followup(request, pk):
 
     followup = get_object_or_404(
-        FollowUpRecord.objects.select_related(
+        _visible_followups(request).select_related(
             'assessment__resident'
         ),
         pk=pk
@@ -517,6 +659,8 @@ def delete_followup(request, pk):
         'action',
         request.GET.get('action', 'archive')
     )
+    is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
     if action not in {'archive', 'delete'}:
         return redirect('followup_list')
 
@@ -526,22 +670,42 @@ def delete_followup(request, pk):
             f"{followup.assessment.resident.first_name} "
             f"{followup.assessment.resident.last_name}"
         )
+
         with transaction.atomic():
+            role = 'admin' if request.user.is_superuser else 'staff'
+            archive_model = (
+                AdminArchivedRecord
+                if role == 'admin'
+                else StaffArchivedRecord
+            )
+
             if action == 'delete':
+                archive_model.objects.filter(
+                    record_type='followup',
+                    record_id=followup.pk,
+                ).delete()
+                RoleDeletedRecord.objects.get_or_create(
+                    role=role,
+                    record_type='followup',
+                    record_id=followup.pk,
+                    defaults={'deleted_by': request.user},
+                )
                 ActivityLog.objects.create(
                     user=request.user,
-                    role='Admin' if request.user.is_superuser else 'Staff',
+                    role='Admin' if role == 'admin' else 'Staff',
                     action='Permanently Delete Record',
                     description=(
-                        f"Permanently deleted follow-up record for {resident_name} "
-                        f"on {followup.follow_up_date}."
+                        f"Permanently deleted follow-up record for "
+                        f"{resident_name} on {followup.follow_up_date} "
+                        f"from {role} records."
                     ),
                 )
-                followup.delete()
-            else:
+
+            elif role == 'admin':
+
                 ActivityLog.objects.create(
                     user=request.user,
-                    role='Admin' if request.user.is_superuser else 'Staff',
+                    role='Admin',
                     action='Archive Record',
                     description=(
                         f"Archived follow-up record for {resident_name} "
@@ -549,25 +713,46 @@ def delete_followup(request, pk):
                     )
                 )
 
-                archived_at = timezone.now()
-                FollowUpRecord.all_objects.filter(pk=followup.pk).update(
-                    archived_at=archived_at,
-                    updated_at=archived_at,
+                archive_model.objects.get_or_create(
+                    record_type='followup',
+                    record_id=followup.pk,
+                    defaults={'archived_by': request.user},
                 )
 
-        return redirect(
-            'followup_list'
-        )
+            else:
+
+                ActivityLog.objects.create(
+                    user=request.user,
+                    role='Staff',
+                    action='Archive Record',
+                    description=(
+                        f"Removed follow-up record for {resident_name} "
+                        f"on {followup.follow_up_date} from staff lists."
+                    ),
+                )
+
+                archive_model.objects.get_or_create(
+                    record_type='followup',
+                    record_id=followup.pk,
+                    defaults={'archived_by': request.user},
+                )
+
+        if is_ajax:
+            return JsonResponse({'success': True})
+        return redirect('followup_list')
 
     context = {
-
         'followup': followup,
         'action': action,
-
-        'base_template': (
-            get_base_template(request)
-        ),
+        'base_template': get_base_template(request),
     }
+
+    if is_ajax:
+        return render(
+            request,
+            'nutrition/_followup_delete_confirmation.html',
+            context,
+        )
 
     return render(
         request,

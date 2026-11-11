@@ -250,7 +250,7 @@
 
             <div class="row">
 
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
 
                     <!-- GENERATE REPORTS -->
 
@@ -330,7 +330,7 @@
 
             </div>
 
-            <div class="col-md-6 mb-3">
+            <div class="col-md-4 mb-3">
 
                 <a href="{% url 'export_excel' %}{% if export_query %}?{{ export_query }}{% endif %}" class="btn btn-warning w-100">
 
@@ -339,6 +339,18 @@
                     Export Excel
 
                 </a>
+
+            </div>
+
+            <div class="col-md-4 mb-3">
+
+                <button type="button" onclick="window.print()" class="btn btn-dark w-100">
+
+                    <i class="bi bi-printer"></i>
+
+                    Print
+
+                </button>
 
             </div>
 
@@ -546,7 +558,7 @@
 
                     <tbody>
 
-                        {% for a in assessments %}
+                        {% for a in page_obj %}
 
                         <tr>
 
@@ -666,6 +678,9 @@
         </div>
 
     </div>
+    {% include "shared/pagination.html" %}
+    {% include "shared/report_assignatory.html" %}
+
         <!-- PRINT STYLES -->
 
     <style>
@@ -681,6 +696,7 @@
         .sidebar,
         .topbar,
         .btn,
+        .pagination,
         form,
         .card-header{
 

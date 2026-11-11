@@ -49,6 +49,10 @@ class DashboardAnalyticsChartTests(TestCase):
 		self.assertContains(response, 'Monthly Assessment Trend')
 		self.assertContains(response, 'dashboard-status-chart')
 		self.assertContains(response, 'dashboard-trend-chart')
+		self.assertContains(response, 'recent-residents-content')
+		self.assertContains(response, 'recent-assessments-content')
+		self.assertContains(response, 'recent-followups-content')
+		self.assertContains(response, 'refreshes every 5 seconds')
 
 	def test_dashboard_shows_recent_assessments_and_followups(self):
 		user = get_user_model().objects.create_user(
@@ -120,3 +124,18 @@ class DashboardAnalyticsChartTests(TestCase):
 		self.assertEqual(data['assessment_trend_labels'][0], 'Nov 2025')
 		self.assertEqual(data['assessment_trend_labels'][-1], 'Oct 2026')
 		self.assertEqual(data['assessment_trend_counts'][-2:], [2, 1])
+		self.assertEqual(data['recent_residents'][0]['name'], 'Chart Resident')
+		self.assertEqual(data['recent_residents'][0]['address'], 'Test Zone')
+		self.assertEqual(len(data['recent_assessments']), 3)
+
+		FollowUpRecord.objects.create(
+			assessment=resident.assessments.order_by('-assessment_date').first(),
+			follow_up_date=date(2026, 10, 21),
+			status='Pending',
+		)
+		updated_response = self.client.get(reverse('live_dashboard_stats'))
+		self.assertEqual(updated_response.status_code, 200)
+		self.assertEqual(
+			updated_response.json()['recent_followups'][0]['resident_name'],
+			'Chart Resident',
+		)

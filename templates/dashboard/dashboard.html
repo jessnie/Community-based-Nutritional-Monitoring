@@ -190,11 +190,14 @@
 <div class="dashboard-hero">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <h3 class="fw-bold mb-0">Community Health Dashboard</h3>
-        <span class="live-indicator"><span class="live-dot"></span> Live data</span>
+        <span class="live-indicator">
+            <span class="live-dot"></span>
+            <span id="dashboard-refresh-status" aria-live="polite">Near real-time · refreshes every 5 seconds</span>
+        </span>
     </div>
     <h4 class="fw-semibold mb-2">Welcome Staff</h4>
     <p class="mb-2">Welcome to the <strong>Community-Based Nutritional Monitoring and Decision Support System.</strong></p>
-    <p class="mb-0">This dashboard provides a real-time view of resident demographics and nutrition monitoring results for Barangay Can-Uguib.</p>
+    <p class="mb-0">This dashboard provides a near-real-time view of resident demographics and nutrition monitoring results for Barangay Can-Uguib.</p>
 </div>
 
 <div class="priority-panel mb-4">
@@ -390,6 +393,7 @@
                         <h6 class="fw-bold mb-0">Recent Assessments</h6>
                         <a href="{% url 'assessment_list' %}" class="btn btn-sm btn-outline-primary">View all</a>
                     </div>
+                    <div id="recent-assessments-content">
                     {% if recent_assessments %}
                         <ul class="list-group list-group-flush">
                             {% for assessment in recent_assessments %}
@@ -409,6 +413,7 @@
                     {% else %}
                         <p class="text-muted mb-0">No recent assessments found.</p>
                     {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -419,6 +424,7 @@
                         <h6 class="fw-bold mb-0">Recent Follow-ups</h6>
                         <a href="{% url 'followup_list' %}" class="btn btn-sm btn-outline-primary">View all</a>
                     </div>
+                    <div id="recent-followups-content">
                     {% if recent_followups %}
                         <ul class="list-group list-group-flush">
                             {% for followup in recent_followups %}
@@ -438,6 +444,7 @@
                     {% else %}
                         <p class="text-muted mb-0">No recent follow-ups found.</p>
                     {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -451,6 +458,7 @@
                 <h5 class="fw-bold mb-3 text-success">
                     <i class="bi bi-clock-history"></i> Recent Residents
                 </h5>
+                <div id="recent-residents-content">
                 {% if recent_residents %}
                     <ul class="list-group list-group-flush">
                         {% for resident in recent_residents %}
@@ -468,6 +476,7 @@
                 {% else %}
                     <p class="text-muted mb-0">No recent residents found.</p>
                 {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -581,6 +590,7 @@
                     </div>
                 </div>
 
+                <div id="urgent-alerts-content">
                 {% if urgent_alerts %}
                     <ul id="urgent-alerts-list" class="list-group list-group-flush mt-3">
                         {% for assessment in urgent_alerts %}
@@ -598,6 +608,7 @@
                 {% else %}
                     <p id="urgent-alerts-empty" class="text-muted mb-0">No urgent nutrition alerts at the moment.</p>
                 {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -718,6 +729,92 @@
         },
     });
 
+    function setText(id, value) {
+        const element = document.getElementById(id);
+        if (element && value !== undefined && value !== null) {
+            element.textContent = value;
+        }
+    }
+
+    function textElement(tagName, className, value) {
+        const element = document.createElement(tagName);
+        element.className = className;
+        element.textContent = value ?? '';
+        return element;
+    }
+
+    function renderRecentItems(containerId, items, options) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.replaceChildren();
+
+        if (!items.length) {
+            container.append(
+                textElement('p', 'text-muted mb-0', options.emptyMessage)
+            );
+            return;
+        }
+
+        const list = textElement('ul', 'list-group list-group-flush', '');
+        items.forEach(item => {
+            const listItem = textElement('li', 'list-group-item px-0', '');
+            const row = textElement(
+                'div',
+                'd-flex justify-content-between align-items-center gap-2',
+                ''
+            );
+            const details = document.createElement('div');
+            details.append(textElement('strong', '', item[options.nameKey]));
+
+            if (options.detailKey) {
+                details.append(
+                    textElement('div', 'text-muted small', item[options.detailKey])
+                );
+            }
+
+            row.append(details);
+            if (options.statusKey) {
+                const status = item[options.statusKey];
+                const statusClasses = {
+                    Normal: 'bg-success-subtle text-success',
+                    Underweight: 'bg-warning-subtle text-warning',
+                    Overweight: 'bg-info-subtle text-info',
+                    Obese: 'bg-danger-subtle text-danger',
+                    Pending: 'bg-warning-subtle text-warning',
+                    Completed: 'bg-success-subtle text-success',
+                    'For Referral': 'bg-danger-subtle text-danger',
+                };
+                row.append(
+                    textElement(
+                        'span',
+                        `badge ${statusClasses[status] || 'bg-secondary-subtle text-secondary'}`,
+                        status
+                    )
+                );
+            } else {
+                row.append(
+                    textElement('span', 'badge bg-success-subtle text-success', 'New')
+                );
+            }
+
+            listItem.append(row);
+            list.append(listItem);
+        });
+        container.append(list);
+    }
+
+    function renderMessageList(containerId, messages) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const list = textElement('ul', 'list-group list-group-flush', '');
+        messages.forEach(message => {
+            list.append(
+                textElement('li', 'list-group-item px-0 py-2 text-muted small', message)
+            );
+        });
+        container.replaceChildren(list);
+    }
+
     function updateDashboard(data) {
         const metricMap = {
             'total-population': data.total_population,
@@ -735,8 +832,7 @@
         };
 
         Object.entries(metricMap).forEach(([id, value]) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = value;
+            setText(id, value);
         });
 
         if (Array.isArray(data.nutrition_status_chart_data)) {
@@ -768,40 +864,69 @@
             lastUpdated.textContent = data.last_updated;
         }
 
+        renderRecentItems('recent-residents-content', data.recent_residents || [], {
+            nameKey: 'name',
+            detailKey: 'address',
+            emptyMessage: 'No recent residents found.',
+        });
+        renderRecentItems('recent-assessments-content', data.recent_assessments || [], {
+            nameKey: 'resident_name',
+            detailKey: 'assessment_date',
+            statusKey: 'nutritional_status',
+            emptyMessage: 'No recent assessments found.',
+        });
+        renderRecentItems('recent-followups-content', data.recent_followups || [], {
+            nameKey: 'resident_name',
+            detailKey: 'follow_up_date',
+            statusKey: 'status',
+            emptyMessage: 'No recent follow-ups found.',
+        });
+
         const priorityCasesBody = document.getElementById('priority-cases-body');
         if (priorityCasesBody && Array.isArray(data.priority_cases)) {
+            priorityCasesBody.replaceChildren();
             if (data.priority_cases.length > 0) {
-                priorityCasesBody.innerHTML = data.priority_cases.map(item => `
-                    <tr>
-                        <td>
-                            <strong>${item.name}</strong>
-                            <div class="small text-muted">${item.date}</div>
-                        </td>
-                        <td>
-                            <span class="badge ${item.status === 'Underweight' ? 'bg-warning-subtle text-warning' : item.status === 'Overweight' ? 'bg-info-subtle text-info' : 'bg-danger-subtle text-danger'}">${item.status}</span>
-                        </td>
-                        <td>${Number(item.bmi).toFixed(2)}</td>
-                        <td>${item.action}</td>
-                    </tr>
-                `).join('');
+                data.priority_cases.forEach(item => {
+                    const row = document.createElement('tr');
+                    const residentCell = document.createElement('td');
+                    residentCell.append(textElement('strong', '', item.name));
+                    residentCell.append(
+                        textElement('div', 'small text-muted', item.date)
+                    );
+                    row.append(residentCell);
+
+                    const statusClasses = {
+                        Underweight: 'bg-warning-subtle text-warning',
+                        Overweight: 'bg-info-subtle text-info',
+                        Obese: 'bg-danger-subtle text-danger',
+                    };
+                    const statusCell = document.createElement('td');
+                    statusCell.append(
+                        textElement(
+                            'span',
+                            `badge ${statusClasses[item.status] || 'bg-secondary-subtle text-secondary'}`,
+                            item.status
+                        )
+                    );
+                    row.append(statusCell);
+
+                    const bmi = Number(item.bmi);
+                    row.append(textElement('td', '', Number.isFinite(bmi) ? bmi.toFixed(2) : ''));
+                    row.append(textElement('td', '', item.action));
+                    priorityCasesBody.append(row);
+                });
             } else {
-                priorityCasesBody.innerHTML = '<tr><td colspan="4" class="text-muted">No priority cases at the moment.</td></tr>';
+                const row = document.createElement('tr');
+                row.append(
+                    textElement('td', 'text-muted', 'No priority cases at the moment.')
+                );
+                row.firstElementChild.colSpan = 4;
+                priorityCasesBody.append(row);
             }
         }
 
-        const decisionBox = document.getElementById('decision-support-box');
-        if (decisionBox && Array.isArray(data.decision_support)) {
-            decisionBox.innerHTML = '<ul class="list-group list-group-flush">' +
-                data.decision_support.map(message => '<li class="list-group-item px-0 py-2 text-muted small">' + message + '</li>').join('') +
-                '</ul>';
-        }
-
-        const recommendationsBox = document.getElementById('recommendations-box');
-        if (recommendationsBox && Array.isArray(data.recommendations)) {
-            recommendationsBox.innerHTML = '<ul class="list-group list-group-flush">' +
-                data.recommendations.map(item => '<li class="list-group-item px-0 py-2 text-muted small">' + item + '</li>').join('') +
-                '</ul>';
-        }
+        renderMessageList('decision-support-box', data.decision_support || []);
+        renderMessageList('recommendations-box', data.recommendations || []);
 
         const pendingFollowups = document.getElementById('pending-followups');
         const completedFollowups = document.getElementById('completed-followups');
@@ -811,33 +936,59 @@
         if (completedFollowups) completedFollowups.textContent = data.completed_followups ?? 0;
         if (referralFollowups) referralFollowups.textContent = data.referral_followups ?? 0;
 
-        const alertsList = document.getElementById('urgent-alerts-list');
-        const alertsEmpty = document.getElementById('urgent-alerts-empty');
-
-        if (Array.isArray(data.urgent_alerts) && data.urgent_alerts.length > 0) {
-            if (alertsList) {
-                alertsList.innerHTML = data.urgent_alerts.map(alert => `
-                    <li class="list-group-item px-0">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>${alert.name}</strong>
-                                <div class="text-muted small">${alert.status} • ${alert.date}</div>
-                            </div>
-                            <span class="badge bg-danger-subtle text-danger">Alert</span>
-                        </div>
-                    </li>
-                `).join('');
-            }
-            if (alertsEmpty) alertsEmpty.remove();
-        } else {
-            if (alertsList) alertsList.innerHTML = '';
-            if (alertsEmpty) {
-                alertsEmpty.textContent = 'No urgent nutrition alerts at the moment.';
+        const alertsContent = document.getElementById('urgent-alerts-content');
+        if (alertsContent && Array.isArray(data.urgent_alerts)) {
+            alertsContent.replaceChildren();
+            if (!data.urgent_alerts.length) {
+                alertsContent.append(
+                    textElement(
+                        'p',
+                        'text-muted mb-0',
+                        'No urgent nutrition alerts at the moment.'
+                    )
+                );
+            } else {
+                const list = textElement(
+                    'ul',
+                    'list-group list-group-flush mt-3',
+                    ''
+                );
+                data.urgent_alerts.forEach(alert => {
+                    const listItem = textElement('li', 'list-group-item px-0', '');
+                    const row = textElement(
+                        'div',
+                        'd-flex justify-content-between align-items-center',
+                        ''
+                    );
+                    const details = document.createElement('div');
+                    details.append(textElement('strong', '', alert.name));
+                    details.append(
+                        textElement(
+                            'div',
+                            'text-muted small',
+                            `${alert.status} · ${alert.date}`
+                        )
+                    );
+                    row.append(details);
+                    row.append(
+                        textElement('span', 'badge bg-danger-subtle text-danger', 'Alert')
+                    );
+                    listItem.append(row);
+                    list.append(listItem);
+                });
+                alertsContent.append(list);
             }
         }
     }
 
+    let dashboardRequestInFlight = false;
+
     function fetchLiveDashboard() {
+        if (document.visibilityState === 'hidden' || dashboardRequestInFlight) {
+            return;
+        }
+
+        dashboardRequestInFlight = true;
         fetch(liveDashboardUrl, {
             method: 'GET',
             headers: {
@@ -851,11 +1002,26 @@
             return response.json();
         })
         .then(data => updateDashboard(data))
-        .catch(error => console.error('Live dashboard update failed:', error));
+        .then(() => setText(
+            'dashboard-refresh-status',
+            'Near real-time · refreshes every 5 seconds'
+        ))
+        .catch(error => {
+            console.error('Live dashboard update failed:', error);
+            setText('dashboard-refresh-status', 'Update failed · retrying shortly');
+        })
+        .finally(() => {
+            dashboardRequestInFlight = false;
+        });
     }
 
     fetchLiveDashboard();
-    setInterval(fetchLiveDashboard, 15000);
+    window.setInterval(fetchLiveDashboard, 5000);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            fetchLiveDashboard();
+        }
+    });
 </script>
 
 {% endblock %}

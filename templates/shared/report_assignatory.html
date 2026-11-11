@@ -1,0 +1,30 @@
+<div class="report-signature">
+    <div class="report-signature-line"></div>
+    <div class="report-signature-role">{{ reporter_role }}</div>
+</div>
+
+<style>
+    .report-signature {
+        display: none;
+    }
+
+    @media print {
+        .report-signature {
+            display: block;
+            width: 260px;
+            margin: 40px 30px 0 auto;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .report-signature-line {
+            border-top: 1px solid #222;
+            margin-bottom: 5px;
+        }
+
+        .report-signature-role {
+            text-align: center !important;
+            width: 100%;
+        }
+    }
+</style>

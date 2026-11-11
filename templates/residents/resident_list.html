@@ -1,20 +1,41 @@
+
 {% extends 'base_staff.html' %}
 
 {% block content %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-
     <h3>Residents</h3>
 
-    <a href="{% url 'add_resident' %}" class="btn btn-success">
+    <a href="{% url 'add_resident' %}" class="btn btn-success"
+       data-ajax-modal data-modal-title="Add Resident">
         + Add Resident
     </a>
-
 </div>
 
 <form method="GET" class="mb-3">
-
     <div class="input-group">
+
+        <label class="visually-hidden" for="resident-classification">
+            Classification
+        </label>
+
+        <select name="classification" id="resident-classification" class="form-select">
+            <option value="" {% if not classification %}selected{% endif %}>
+                All classifications
+            </option>
+            <option value="kids" {% if classification == 'kids' %}selected{% endif %}>
+                Kids
+            </option>
+            <option value="teens" {% if classification == 'teens' %}selected{% endif %}>
+                Teens
+            </option>
+            <option value="adults" {% if classification == 'adults' %}selected{% endif %}>
+                Adults
+            </option>
+            <option value="senior" {% if classification == 'senior' %}selected{% endif %}>
+                Senior
+            </option>
+        </select>
 
         <input
             type="text"
@@ -23,155 +44,131 @@
             class="form-control"
             placeholder="Search Resident...">
 
-        <button class="btn btn-success">
-
+        <button type="submit" class="btn btn-success">
             Search
-
         </button>
 
     </div>
-
 </form>
 
+<div class="table-responsive">
 <table class="table table-bordered table-hover">
 
     <thead class="table-success">
-
-    <tr>
-
-        <th>ID</th>
-        <th>Name</th>
-        <th>Sex</th>
-        <th>Age</th>
-        <th>zone</th>
-        <th width="200">Action</th>
-
-    </tr>
-
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Sex</th>
+            <th>Age</th>
+            <th>Zone</th>
+            <th width="220">Action</th>
+        </tr>
     </thead>
 
     <tbody>
 
-    {% for resident in page_obj %}
+        {% for resident in page_obj %}
 
-    <tr>
+        <tr>
+            <td>{{ resident.resident_id }}</td>
 
-        <td>{{ resident.resident_id }}</td>
+            <td>
+                {{ resident.first_name }} {{ resident.last_name }}
+            </td>
 
-        <td>{{ resident.first_name }} {{ resident.last_name }}</td>
+            <td>{{ resident.sex }}</td>
 
-        <td>{{ resident.sex }}</td>
+            <td>{{ resident.age }}</td>
 
-        <td>{{ resident.age }}</td>
+            <td>{{ resident.address }}</td>
 
-        <td>{{ resident.address }}</td>
+            <td>
 
-    <td>
+                <!-- VIEW BUTTON -->
+                <a href="{% url 'view_resident' resident.id %}"
+                   class="btn btn-info btn-sm"
+                   data-ajax-modal data-modal-title="Resident Profile"
+                   aria-label="View resident"
+                   title="View">
+                    <i class="bi bi-eye-fill" aria-hidden="true"></i>
+                </a>
 
-    <a href="{% url 'view_resident' resident.id %}"
-       class="btn btn-info btn-sm"
-       aria-label="View resident"
-       title="View">
+                <!-- EDIT BUTTON -->
+                <a href="{% url 'edit_resident' resident.id %}"
+                   class="btn btn-warning btn-sm"
+                   data-ajax-modal data-modal-title="Edit Resident"
+                   aria-label="Edit resident"
+                   title="Edit">
+                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                </a>
 
-        <i class="bi bi-eye-fill" aria-hidden="true"></i>
+                <!-- ARCHIVE BUTTON -->
+                <a href="{% url 'delete_resident' resident.id %}?action=archive"
+                   class="btn btn-secondary btn-sm"
+                   data-ajax-modal data-modal-title="Archive Resident"
+                   aria-label="Archive resident"
+                   title="Archive">
+                    <i class="bi bi-archive-fill" aria-hidden="true"></i>
+                </a>
 
-    </a>
+                <!-- DELETE BUTTON -->
+                <a href="{% url 'delete_resident' resident.id %}?action=delete"
+                   class="btn btn-danger btn-sm"
+                   data-ajax-modal data-modal-title="Delete Resident"
+                   aria-label="Permanently delete resident from staff records"
+                   title="Delete">
+                    <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                </a>
 
-    <a href="{% url 'edit_resident' resident.id %}"
-       class="btn btn-warning btn-sm"
-       aria-label="Edit resident"
-       title="Edit">
+            </td>
+        </tr>
 
-        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+        {% empty %}
 
-    </a>
+        <tr>
+            <td colspan="6" class="text-center">
+                No residents found.
+            </td>
+        </tr>
 
-    <a href="{% url 'delete_resident' resident.id %}?action=archive"
-       class="btn btn-warning btn-sm"
-       aria-label="Archive resident"
-       title="Archive">
-
-        <i class="bi bi-archive-fill" aria-hidden="true"></i>
-
-    </a>
-
-    <a href="{% url 'delete_resident' resident.id %}?action=delete"
-       class="btn btn-danger btn-sm"
-       aria-label="Permanently delete resident"
-       title="Permanently Delete">
-
-        <i class="bi bi-trash-fill" aria-hidden="true"></i>
-
-    </a>
-
-    </td>
-
-    </tr>
-
-    {% empty %}
-
-    <tr>
-
-        <td colspan="6" class="text-center">
-
-            No residents found.
-
-        </td>
-
-    </tr>
-
-    {% endfor %}
+        {% endfor %}
 
     </tbody>
 
 </table>
+</div>
 
+<!-- PAGINATION -->
 <nav>
+    <ul class="pagination">
 
-<ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link"
+               href="?page={{ page_obj.previous_page_number }}&search={{ search|urlencode }}&classification={{ classification|urlencode }}">
+                Previous
+            </a>
+        </li>
+        {% endif %}
 
-{% if page_obj.has_previous %}
+        <li class="page-item active">
+            <span class="page-link">
+                {{ page_obj.number }}
+            </span>
+        </li>
 
-<li class="page-item">
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link"
+               href="?page={{ page_obj.next_page_number }}&search={{ search|urlencode }}&classification={{ classification|urlencode }}">
+                Next
+            </a>
+        </li>
+        {% endif %}
 
-<a class="page-link"
-href="?page={{ page_obj.previous_page_number }}&search={{ search }}">
-
-Previous
-
-</a>
-
-</li>
-
-{% endif %}
-
-<li class="page-item active">
-
-<span class="page-link">
-
-{{ page_obj.number }}
-
-</span>
-
-</li>
-
-{% if page_obj.has_next %}
-
-<li class="page-item">
-
-<a class="page-link"
-href="?page={{ page_obj.next_page_number }}&search={{ search }}">
-
-Next
-
-</a>
-
-</li>
-
-{% endif %}
-
-</ul>
-
+    </ul>
 </nav>
+
+{% include "shared/action_modal.html" %}
 
 {% endblock %}

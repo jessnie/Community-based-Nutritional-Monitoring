@@ -1,6 +1,7 @@
 from openpyxl import Workbook
-from openpyxl.styles import Font
+from openpyxl.styles import Alignment, Border, Font, Side
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import render
 from django.utils import timezone
@@ -8,15 +9,17 @@ from django.utils.dateparse import parse_date
 from django.http import HttpResponse
 
 from activity_logs.models import ActivityLog
-from activity_logs.utils import log_activity
+from activity_logs.utils import exclude_role_archived, log_activity
 
 from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import (
     SimpleDocTemplate,
     Table,
     TableStyle,
     Paragraph,
+    Spacer,
 )
 from reportlab.lib.styles import getSampleStyleSheet
 
@@ -33,10 +36,16 @@ def get_template(request, staff_template, admin_template):
     return staff_template
 
 
+def get_reporter_role(user):
+    return 'Administrator' if user.is_superuser else 'Staff'
+
+
 def filtered_assessments(request):
     assessments = NutritionAssessment.objects.select_related(
         'resident'
     ).order_by('-assessment_date', '-created_at')
+    role = 'admin' if request.user.is_superuser else 'staff'
+    assessments = exclude_role_archived(assessments, role)
 
     status = request.GET.get('status', '').strip()
     resident_name = request.GET.get('resident_name', '').strip()
@@ -119,7 +128,15 @@ def report_dashboard(request):
     pending_followups = FollowUpRecord.objects.filter(
         assessment__in=assessments,
         status='Pending'
-    ).count()
+    )
+    residents = Resident.objects.order_by('last_name', 'first_name')
+    role = 'admin' if request.user.is_superuser else 'staff'
+    pending_followups = exclude_role_archived(pending_followups, role)
+    pending_followups = pending_followups.count()
+    residents = exclude_role_archived(residents, role)
+    page_obj = Paginator(assessments, 5).get_page(
+        request.GET.get('page')
+    )
 
     pdf_exports = ActivityLog.objects.filter(
         action='Export PDF'
@@ -131,7 +148,10 @@ def report_dashboard(request):
 
     context = {
         'assessments': assessments,
-        'residents': Resident.objects.order_by('last_name', 'first_name'),
+        'page_obj': page_obj,
+        'pagination_aria_label': 'Report assessment pages',
+        'residents': residents,
+        'reporter_role': get_reporter_role(request.user),
         'total_reports': total_reports,
         'monthly_reports': monthly_reports,
         'status_summary': status_summary,
@@ -166,10 +186,13 @@ def monthly_report(request):
     ).order_by(
         '-assessment_date'
     )
+    role = 'admin' if request.user.is_superuser else 'staff'
+    assessments = exclude_role_archived(assessments, role)
 
     context = {
         'assessments': assessments,
         'current_month': today.strftime("%B %Y"),
+        'reporter_role': get_reporter_role(request.user),
     }
 
     return render(
@@ -191,10 +214,13 @@ def annual_report(request):
     ).order_by(
         '-assessment_date'
     )
+    role = 'admin' if request.user.is_superuser else 'staff'
+    assessments = exclude_role_archived(assessments, role)
 
     context = {
         'assessments': assessments,
         'current_year': today.year,
+        'reporter_role': get_reporter_role(request.user),
     }
 
     return render(
@@ -312,6 +338,28 @@ def export_pdf(request):
 
     elements.append(table)
 
+    elements.append(Spacer(1, 24))
+    signature_role_style = styles["Normal"].clone("SignatureRole")
+    signature_role_style.alignment = TA_CENTER
+    signature = Table(
+        [[""], [
+            Paragraph(
+                get_reporter_role(request.user),
+                signature_role_style,
+            ),
+        ]],
+        colWidths=[220],
+        rowHeights=[55, 18],
+        hAlign='RIGHT',
+    )
+    signature.setStyle(TableStyle([
+        ('LINEBELOW', (0, 0), (-1, 0), 0.8, colors.black),
+        ('ALIGN', (0, 1), (-1, 1), 'CENTER'),
+        ('TOPPADDING', (0, 1), (-1, 1), 4),
+        ('BOTTOMPADDING', (0, 1), (-1, 1), 0),
+    ]))
+    elements.append(signature)
+
     doc.build(elements)
 
     log_activity(
@@ -420,6 +468,27 @@ def export_excel(request):
         ).value = assessment.remarks
 
         row += 1
+
+    signature_line_row = row + 1
+    signature_role_row = row + 2
+    worksheet.row_dimensions[signature_line_row].height = 30
+    for column in range(2, 5):
+        cell = worksheet.cell(row=signature_line_row, column=column)
+        cell.border = Border(bottom=Side(style='thin'))
+        cell.alignment = Alignment(horizontal='center')
+
+    worksheet.merge_cells(
+        start_row=signature_role_row,
+        start_column=2,
+        end_row=signature_role_row,
+        end_column=4,
+    )
+    role_cell = worksheet.cell(row=signature_role_row, column=2)
+    role_cell.value = get_reporter_role(request.user)
+    role_cell.alignment = Alignment(
+        horizontal='center',
+        vertical='center',
+    )
 
     # Adjust column widths
     column_widths = {

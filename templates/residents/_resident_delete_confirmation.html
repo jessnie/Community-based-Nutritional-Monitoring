@@ -1,0 +1,31 @@
+<p>
+    {% if action == 'delete' %}
+        Are you sure you want to delete?
+    {% else %}
+        Are you sure you want to archive?
+    {% endif %}
+</p>
+
+<p class="text-muted">
+    {{ resident.first_name }} {{ resident.last_name }}
+</p>
+
+<form method="POST" action="{{ request.get_full_path }}"
+      class="modal-compact-confirm" data-ajax-modal-form>
+    {% csrf_token %}
+    <input type="hidden" name="action" value="{{ action }}">
+
+    <div class="modal-form-actions">
+        <button type="submit"
+                class="btn {% if action == 'delete' %}btn-danger{% else %}btn-warning{% endif %}">
+            {% if action == 'delete' %}
+                Delete
+            {% else %}
+                Archive
+            {% endif %}
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+        </button>
+    </div>
+</form>

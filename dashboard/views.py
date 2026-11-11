@@ -7,6 +7,7 @@ from django.shortcuts import render
 from django.utils import timezone
 
 from accounts.decorators import staff_required
+from activity_logs.utils import exclude_staff_archived
 from residents.models import Resident
 from nutrition.models import (
     NutritionAssessment,
@@ -18,13 +19,18 @@ from nutrition.models import (
 def get_dashboard_summary():
     today = timezone.localdate()
 
-    total_population = Resident.objects.count()
+    residents = exclude_staff_archived(Resident.objects.all())
+    assessments = exclude_staff_archived(NutritionAssessment.objects.all())
+    followups = exclude_staff_archived(FollowUpRecord.objects.all())
+    latest_assessments = exclude_staff_archived(current_assessments())
 
-    total_male = Resident.objects.filter(
+    total_population = residents.count()
+
+    total_male = residents.filter(
         sex='Male'
     ).count()
 
-    total_female = Resident.objects.filter(
+    total_female = residents.filter(
         sex='Female'
     ).count()
 
@@ -33,7 +39,7 @@ def get_dashboard_summary():
     adults = 0
     seniors = 0
 
-    for resident in Resident.objects.all():
+    for resident in residents:
         if resident.age <= 12:
             children += 1
         elif resident.age <= 17:
@@ -43,9 +49,7 @@ def get_dashboard_summary():
         else:
             seniors += 1
 
-    total_assessments = NutritionAssessment.objects.count()
-
-    latest_assessments = current_assessments()
+    total_assessments = assessments.count()
 
     normal = latest_assessments.filter(
         nutritional_status='Normal'
@@ -74,7 +78,7 @@ def get_dashboard_summary():
     trend_start = date(trend_months[0][0], trend_months[0][1], 1)
     monthly_assessment_totals = {
         (item['month'].year, item['month'].month): item['total']
-        for item in NutritionAssessment.objects.filter(
+        for item in assessments.filter(
             assessment_date__gte=trend_start,
             assessment_date__lte=today,
         ).annotate(
@@ -100,7 +104,7 @@ def get_dashboard_summary():
         obese,
     ]
 
-    recent_residents = Resident.objects.order_by(
+    recent_residents = residents.order_by(
         '-created_at'
     )[:5]
 
@@ -121,26 +125,26 @@ def get_dashboard_summary():
         '-bmi'
     )[:6]
 
-    pending_followups = FollowUpRecord.objects.filter(
+    pending_followups = followups.filter(
         status='Pending'
     ).count()
 
-    completed_followups = FollowUpRecord.objects.filter(
+    completed_followups = followups.filter(
         status='Completed'
     ).count()
 
-    referral_followups = FollowUpRecord.objects.filter(
+    referral_followups = followups.filter(
         status='For Referral'
     ).count()
 
-    recent_assessments = NutritionAssessment.objects.select_related(
+    recent_assessments = assessments.select_related(
         'resident'
     ).order_by(
         '-assessment_date',
         '-created_at'
     )[:5]
 
-    recent_followups = FollowUpRecord.objects.select_related(
+    recent_followups = followups.select_related(
         'assessment',
         'assessment__resident'
     ).order_by(
@@ -274,7 +278,7 @@ def get_dashboard_summary():
         'priority_level': priority_level,
         'priority_summary': priority_summary,
         'priority_actions': recommendations[:3],
-        'last_updated': __import__('datetime').datetime.now().strftime('%b %d, %Y %I:%M %p'),
+        'last_updated': timezone.localtime().strftime('%b %d, %Y %I:%M:%S %p'),
     }
 
     return summary

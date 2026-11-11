@@ -1,0 +1,56 @@
+{% extends 'base_admin.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+        <h3 class="mb-1">Residents Without Assessment</h3>
+        <p class="text-muted mb-0">Residents with no nutrition assessment visible in admin records.</p>
+    </div>
+    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Dashboard
+    </a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-success">
+            <tr>
+                <th scope="col">Resident ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Sex</th>
+                <th scope="col">Age</th>
+                <th scope="col">Zone</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resident in page_obj %}
+                <tr>
+                    <td>{{ resident.resident_id }}</td>
+                    <td>{{ resident.first_name }} {{ resident.last_name }}</td>
+                    <td>{{ resident.sex }}</td>
+                    <td>{{ resident.age }}</td>
+                    <td>{{ resident.address }}</td>
+                    <td>
+                        <a href="{% url 'view_resident' resident.pk %}"
+                           class="btn btn-info btn-sm"
+                           data-ajax-modal
+                           data-modal-title="Resident Profile"
+                           aria-label="View {{ resident.first_name }} {{ resident.last_name }}">
+                            <i class="bi bi-eye-fill" aria-hidden="true"></i>
+                            View
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">All visible residents have an assessment.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% include "shared/pagination.html" %}
+{% include "shared/action_modal.html" %}
+{% endblock %}

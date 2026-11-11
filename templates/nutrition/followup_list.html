@@ -17,14 +17,11 @@
         </h3>
 
         <p class="text-muted mb-0">
-
             Monitor residents requiring routine
             follow-up or referral.
-
         </p>
 
     </div>
-
 
     <div>
 
@@ -32,20 +29,21 @@
            class="btn btn-outline-secondary me-2">
 
             <i class="bi bi-heart-pulse"></i>
-
             Assessments
 
         </a>
 
         {% if not user.is_superuser %}
+
             <a href="{% url 'add_followup' %}"
-               class="btn btn-success">
+               class="btn btn-success"
+               data-ajax-modal data-modal-title="Add Follow-Up Record">
 
                 <i class="bi bi-plus-circle"></i>
-
                 Add Follow-Up
 
             </a>
+
         {% endif %}
 
     </div>
@@ -53,15 +51,12 @@
 </div>
 
 
-
 <!-- SUMMARY CARDS -->
 
 <div class="row g-3 mb-4">
 
     <div class="col-md-3">
-
         <div class="card shadow-sm border-0 h-100">
-
             <div class="card-body">
 
                 <div class="text-muted">
@@ -73,16 +68,11 @@
                 </h2>
 
             </div>
-
         </div>
-
     </div>
 
-
     <div class="col-md-3">
-
         <div class="card shadow-sm border-0 h-100">
-
             <div class="card-body">
 
                 <div class="text-muted">
@@ -94,16 +84,11 @@
                 </h2>
 
             </div>
-
         </div>
-
     </div>
 
-
     <div class="col-md-3">
-
         <div class="card shadow-sm border-0 h-100">
-
             <div class="card-body">
 
                 <div class="text-muted">
@@ -115,16 +100,11 @@
                 </h2>
 
             </div>
-
         </div>
-
     </div>
 
-
     <div class="col-md-3">
-
         <div class="card shadow-sm border-0 h-100">
-
             <div class="card-body">
 
                 <div class="text-muted">
@@ -136,13 +116,10 @@
                 </h2>
 
             </div>
-
         </div>
-
     </div>
 
 </div>
-
 
 
 <!-- SEARCH / FILTER -->
@@ -151,8 +128,7 @@
 
     <div class="card-body">
 
-        <form method="get"
-              class="row g-3 align-items-end">
+        <form method="get" class="row g-3 align-items-end">
 
             <div class="col-md-6">
 
@@ -160,14 +136,15 @@
                     Search Resident
                 </label>
 
-                <input type="text"
-                       name="search"
-                       value="{{ search }}"
-                       class="form-control"
-                       placeholder="Resident ID or resident name">
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    class="form-control"
+                    placeholder="Resident ID or resident name"
+                >
 
             </div>
-
 
             <div class="col-md-3">
 
@@ -175,56 +152,40 @@
                     Follow-Up Status
                 </label>
 
-                <select id="status" name="status"
-                        class="form-select">
+                <select id="status" name="status" class="form-select">
 
-                    <option value="">
+                    <option value=""
+                        {% if not status_filter %}selected{% endif %}>
                         All Statuses
                     </option>
 
                     <option value="Pending"
-                        {% if status_filter == "Pending" %}
-                            selected
-                        {% endif %}>
-
+                        {% if status_filter == "Pending" %}selected{% endif %}>
                         Pending
-
                     </option>
 
                     <option value="Completed"
-                        {% if status_filter == "Completed" %}
-                            selected
-                        {% endif %}>
-
+                        {% if status_filter == "Completed" %}selected{% endif %}>
                         Completed
-
                     </option>
 
                     <option value="For Referral"
-                        {% if status_filter == "For Referral" %}
-                            selected
-                        {% endif %}>
-
+                        {% if status_filter == "For Referral" %}selected{% endif %}>
                         For Referral
-
                     </option>
 
                 </select>
 
             </div>
 
-
             <div class="col-md-3">
 
-                <button type="submit"
-                        class="btn btn-primary">
+                <button type="submit" class="btn btn-primary">
 
                     <i class="bi bi-search"></i>
-
                     Filter
 
                 </button>
-
 
                 <a href="{% url 'followup_list' %}"
                    class="btn btn-outline-secondary">
@@ -242,7 +203,6 @@
 </div>
 
 
-
 <!-- FOLLOW-UP TABLE -->
 
 <div class="card shadow-sm border-0">
@@ -258,137 +218,113 @@
                     <tr>
 
                         <th>Resident</th>
-
                         <th>Assessment</th>
-
                         <th>Monitoring</th>
-
                         <th>Follow-Up Date</th>
-
                         <th>Status</th>
-
+                        <th>Follow-Up Method</th>
                         <th>Notes</th>
-
                         <th>Next Follow-Up</th>
-
                         <th>Recorded By</th>
-
-                        <th width="160">
-                            Actions
-                        </th>
+                        <th width="160">Actions</th>
 
                     </tr>
 
                 </thead>
 
-
                 <tbody>
 
-                    {% for followup in followups %}
+                    {% for followup in page_obj %}
 
                     <tr>
 
                         <td>
 
                             <strong>
-
                                 {{ followup.assessment.resident.first_name }}
                                 {{ followup.assessment.resident.last_name }}
-
                             </strong>
 
                             <br>
 
                             <small class="text-muted">
-
                                 {{ followup.assessment.resident.resident_id }}
-
                             </small>
 
                         </td>
 
-
                         <td>
 
                             <strong>Date:</strong>
-
                             {{ followup.assessment.assessment_date }}
 
                             <br>
 
                             <strong>BMI:</strong>
-
                             {{ followup.assessment.bmi }}
 
                             <br>
 
                             <strong>Status:</strong>
-
                             {{ followup.assessment.nutritional_status }}
 
                         </td>
-
 
                         <td>
 
                             {% if followup.assessment.monitoring_flag == "Routine Monitoring" %}
 
                                 <span class="badge bg-success">
-
                                     Routine Monitoring
-
                                 </span>
 
                             {% else %}
 
                                 <span class="badge bg-warning text-dark">
-
                                     Needs Follow-up
-
                                 </span>
 
                             {% endif %}
 
                         </td>
 
-
                         <td>
-
                             {{ followup.follow_up_date }}
-
                         </td>
-
 
                         <td>
 
                             {% if followup.status == "Completed" %}
 
                                 <span class="badge bg-success">
-
                                     Completed
-
                                 </span>
 
                             {% elif followup.status == "For Referral" %}
 
                                 <span class="badge bg-danger">
-
                                     For Referral
-
                                 </span>
 
                             {% else %}
 
                                 <span class="badge bg-warning text-dark">
-
                                     Pending
-
                                 </span>
 
                             {% endif %}
 
                         </td>
 
+                        <td>
+
+                            {% if followup.follow_up_method %}
+                                {{ followup.follow_up_method }}
+                            {% else %}
+                                <span class="text-muted">Not specified</span>
+                            {% endif %}
+
+                        </td>
 
                         <td class="min-width-220">
 
@@ -406,7 +342,6 @@
 
                         </td>
 
-
                         <td>
 
                             {% if followup.next_follow_up_date %}
@@ -415,14 +350,11 @@
 
                             {% else %}
 
-                                <span class="text-muted">
-                                    —
-                                </span>
+                                <span class="text-muted">—</span>
 
                             {% endif %}
 
                         </td>
-
 
                         <td>
 
@@ -440,50 +372,59 @@
 
                         </td>
 
-
                         <td>
 
                             {% if not user.is_superuser %}
-                            <a href="{% url 'edit_followup' followup.id %}"
-                               class="btn btn-warning btn-sm mb-1"
-                               aria-label="Edit follow-up"
-                               title="Edit follow-up">
-                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                            </a>
+
+                                <a
+                                    href="{% url 'edit_followup' followup.id %}"
+                                    class="btn btn-warning btn-sm mb-1"
+                                    data-ajax-modal data-modal-title="Edit Follow-Up"
+                                    title="Edit Follow-Up"
+                                    aria-label="Edit follow-up">
+
+                                    <i class="bi bi-pencil-square"></i>
+
+                                </a>
+
                             {% endif %}
 
-                            <a href="{% url 'delete_followup' followup.id %}?action=archive"
-                               class="btn btn-warning btn-sm mb-1"
-                               aria-label="Archive follow-up"
-                               title="Archive follow-up">
-                                <i class="bi bi-archive-fill" aria-hidden="true"></i>
+                            <a
+                                href="{% url 'delete_followup' followup.id %}?action=archive"
+                                class="btn btn-secondary btn-sm mb-1"
+                                data-ajax-modal data-modal-title="Archive Follow-Up"
+                                title="Archive Follow-Up"
+                                aria-label="Archive follow-up">
+
+                                <i class="bi bi-archive-fill"></i>
+
                             </a>
 
-                            <a href="{% url 'delete_followup' followup.id %}?action=delete"
-                               class="btn btn-danger btn-sm mb-1"
-                               aria-label="Permanently delete follow-up"
-                               title="Permanently delete follow-up">
-                                <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                            <a
+                                href="{% url 'delete_followup' followup.id %}?action=delete"
+                                class="btn btn-danger btn-sm mb-1"
+                                data-ajax-modal data-modal-title="Delete Follow-Up"
+                                title="Delete"
+                                aria-label="Delete follow-up">
+
+                                <i class="bi bi-trash-fill"></i>
+
                             </a>
 
                         </td>
 
                     </tr>
 
-
                     {% empty %}
 
                     <tr>
 
-                        <td colspan="9"
-                            class="text-center py-4">
+                        <td colspan="9" class="text-center py-4">
 
                             <i class="bi bi-clipboard2-pulse fs-2 text-muted"></i>
 
                             <p class="text-muted mt-2 mb-0">
-
                                 No follow-up records found.
-
                             </p>
 
                         </td>
@@ -501,5 +442,9 @@
     </div>
 
 </div>
+
+{% include "shared/pagination.html" %}
+
+{% include "shared/action_modal.html" %}
 
 {% endblock %}

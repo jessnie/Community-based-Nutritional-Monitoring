@@ -28,6 +28,9 @@
         <p class="text-muted">
             Community-Based Nutritional Monitoring System
         </p>
+        <small id="analytics-last-updated" class="text-muted" aria-live="polite">
+            Updating every 15 seconds · Last updated {{ last_updated }}
+        </small>
 
     </div>
 
@@ -42,12 +45,13 @@
                 <div class="card-header bg-success text-white">
 
                     <h5 class="mb-0">
-                        Nutritional Status Distribution
+                        Current Nutrition Status
                     </h5>
 
                 </div>
 
                 <div class="card-body">
+                    <p class="small text-muted">Latest assessment per resident.</p>
 
                     <canvas id="pieChart"></canvas>
 
@@ -66,12 +70,13 @@
                 <div class="card-header bg-primary text-white">
 
                     <h5 class="mb-0">
-                        Monthly Assessments
+                        Assessment History by Month
                     </h5>
 
                 </div>
 
                 <div class="card-body">
+                    <p class="small text-muted">Includes all recorded assessments, not only the latest per resident.</p>
 
                     <canvas id="barChart"></canvas>
 
@@ -90,7 +95,7 @@
         <div class="card-header bg-dark text-white">
 
             <h5 class="mb-0">
-                Assessment Trend
+                Assessment History Trend
             </h5>
 
         </div>
@@ -112,12 +117,14 @@
 
 <script>
 
+const liveAnalyticsUrl = '{% url "live_analytics_stats" %}';
+const lastUpdated = document.getElementById('analytics-last-updated');
 const months = JSON.parse(document.getElementById("months-data").textContent);
 const counts = JSON.parse(document.getElementById("counts-data").textContent);
 
 /* PIE CHART */
 
-new Chart(document.getElementById("pieChart"), {
+const statusChart = new Chart(document.getElementById("pieChart"), {
 
     type: "pie",
 
@@ -154,7 +161,7 @@ new Chart(document.getElementById("pieChart"), {
 
 /* BAR CHART */
 
-new Chart(document.getElementById("barChart"), {
+const monthlyChart = new Chart(document.getElementById("barChart"), {
 
     type: "bar",
 
@@ -163,8 +170,7 @@ new Chart(document.getElementById("barChart"), {
         labels: months,
 
         datasets: [{
-
-            label: "Assessments",
+            label: "All Assessments",
 
             data: counts,
 
@@ -178,7 +184,7 @@ new Chart(document.getElementById("barChart"), {
 
 /* LINE CHART */
 
-new Chart(document.getElementById("lineChart"), {
+const trendChart = new Chart(document.getElementById("lineChart"), {
 
     type: "line",
 
@@ -188,7 +194,7 @@ new Chart(document.getElementById("lineChart"), {
 
         datasets: [{
 
-            label: "Assessment Trend",
+            label: "All Assessments",
 
             data: counts,
 
@@ -203,6 +209,36 @@ new Chart(document.getElementById("lineChart"), {
     }
 
 });
+
+function fetchLiveAnalytics() {
+    fetch(liveAnalyticsUrl, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Analytics request failed with status ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            statusChart.data.datasets[0].data = data.status_chart_data;
+            statusChart.update();
+            monthlyChart.data.labels = data.months;
+            monthlyChart.data.datasets[0].data = data.monthly_counts;
+            monthlyChart.update();
+            trendChart.data.labels = data.months;
+            trendChart.data.datasets[0].data = data.monthly_counts;
+            trendChart.update();
+            lastUpdated.textContent = `Updating every 15 seconds · Last updated ${data.last_updated}`;
+        })
+        .catch(error => {
+            console.error('Live analytics update failed:', error);
+            lastUpdated.textContent = 'Live update failed. Displayed data may be out of date.';
+        });
+}
+
+fetchLiveAnalytics();
+window.setInterval(fetchLiveAnalytics, 15000);
 
 </script>
 

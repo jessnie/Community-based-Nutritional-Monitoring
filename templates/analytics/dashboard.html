@@ -85,6 +85,9 @@
         <p class="text-muted mb-0">
             Nutritional monitoring and follow-up summary
         </p>
+        <small id="analytics-last-updated" class="text-muted" aria-live="polite">
+            Updating every 15 seconds · Last updated {{ last_updated }}
+        </small>
     </div>
 
     <a href="{% url 'followup_list' %}"
@@ -107,57 +110,57 @@
         <div class="analytics-summary-grid">
             <div class="analytics-summary-tile">
                 <small class="text-muted">Total Residents</small>
-                <div class="summary-number text-primary">{{ total_residents }}</div>
+                <div id="analytics-total-residents" class="summary-number text-primary">{{ total_residents }}</div>
                 <small class="text-muted">Registered residents</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Total Assessments</small>
-                <div class="summary-number text-success">{{ total_assessments }}</div>
-                <small class="text-muted">Nutrition assessments</small>
+                <div id="analytics-total-assessments" class="summary-number text-success">{{ total_assessments }}</div>
+                <small class="text-muted">All recorded assessments</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Needs Follow-Up</small>
-                <div class="summary-number text-warning">{{ needs_followup }}</div>
+                <div id="analytics-needs-followup" class="summary-number text-warning">{{ needs_followup }}</div>
                 <small class="text-muted">Flagged assessments</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Follow-Up Records</small>
-                <div class="summary-number text-info">{{ total_followups }}</div>
+                <div id="analytics-total-followups" class="summary-number text-info">{{ total_followups }}</div>
                 <small class="text-muted">Recorded follow-ups</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Residents Assessed</small>
-                <h3>{{ assessed_residents }}</h3>
-                <small class="text-muted">Coverage: {{ coverage }}%</small>
+                <h3 id="analytics-assessed-residents">{{ assessed_residents }}</h3>
+                <small class="text-muted">Coverage: <span id="analytics-coverage">{{ coverage }}</span>%</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Average BMI</small>
-                <h3>{{ average_bmi }}</h3>
-                <small class="text-muted">Based on recorded assessments</small>
+                <h3 id="analytics-average-bmi">{{ average_bmi }}</h3>
+                <small class="text-muted">All recorded assessments</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Routine Monitoring</small>
-                <h3 class="text-success">{{ routine_monitoring }}</h3>
-                <small class="text-muted">Current routine-monitoring flags</small>
+                <h3 id="analytics-routine-monitoring" class="text-success">{{ routine_monitoring }}</h3>
+                <small class="text-muted">Latest assessment per resident</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Normal</small>
-                <h3 class="text-success">{{ normal }}</h3>
+                <h3 id="analytics-normal" class="text-success">{{ normal }}</h3>
                 <small class="text-muted">Nutrition status</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Underweight</small>
-                <h3 class="text-warning">{{ underweight }}</h3>
+                <h3 id="analytics-underweight" class="text-warning">{{ underweight }}</h3>
                 <small class="text-muted">Nutrition status</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Overweight</small>
-                <h3 class="text-info">{{ overweight }}</h3>
+                <h3 id="analytics-overweight" class="text-info">{{ overweight }}</h3>
                 <small class="text-muted">Nutrition status</small>
             </div>
             <div class="analytics-summary-tile">
                 <small class="text-muted">Obese</small>
-                <h3 class="text-danger">{{ obese }}</h3>
+                <h3 id="analytics-obese" class="text-danger">{{ obese }}</h3>
                 <small class="text-muted">Nutrition status</small>
             </div>
         </div>
@@ -175,11 +178,12 @@
 
             <div class="card-header bg-success text-white">
 
-                Nutritional Status Distribution
+                Current Nutrition Status
 
             </div>
 
             <div class="card-body">
+                <p class="small text-muted">Latest assessment per resident.</p>
 
                 <div class="chart-box">
                     <canvas id="statusChart"></canvas>
@@ -198,11 +202,12 @@
 
             <div class="card-header bg-warning">
 
-                Monitoring Flag Distribution
+                Current Monitoring Flags
 
             </div>
 
             <div class="card-body">
+                <p class="small text-muted">Flags from each resident's latest assessment.</p>
 
                 <div class="chart-box">
                     <canvas id="monitoringChart"></canvas>
@@ -223,11 +228,12 @@
 
     <div class="card-header bg-primary text-white">
 
-        Monthly Assessment Trend
+        Assessment History by Month
 
     </div>
 
     <div class="card-body">
+        <p class="small text-muted">Includes all recorded assessments, not only the latest per resident.</p>
 
         <div class="chart-box">
             <canvas id="monthlyChart"></canvas>
@@ -281,7 +287,7 @@
 
                     <div class="col-4">
 
-                        <h3 class="text-warning">
+                        <h3 id="analytics-pending-followups" class="text-warning">
                             {{ pending_followups }}
                         </h3>
 
@@ -294,7 +300,7 @@
 
                     <div class="col-4">
 
-                        <h3 class="text-success">
+                        <h3 id="analytics-completed-followups" class="text-success">
                             {{ completed_followups }}
                         </h3>
 
@@ -307,7 +313,7 @@
 
                     <div class="col-4">
 
-                        <h3 class="text-danger">
+                        <h3 id="analytics-referral-followups" class="text-danger">
                             {{ referral_followups }}
                         </h3>
 
@@ -348,6 +354,8 @@
 <script>
 
 document.addEventListener('DOMContentLoaded', function () {
+    const liveAnalyticsUrl = '{% url "live_analytics_stats" %}';
+    const lastUpdated = document.getElementById('analytics-last-updated');
 
     const months = JSON.parse(
         document.getElementById('months-data').textContent
@@ -374,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function () {
     );
 
 
-    new Chart(
+    const statusChart = new Chart(
         document.getElementById('statusChart'),
         {
             type: 'pie',
@@ -402,7 +410,7 @@ document.addEventListener('DOMContentLoaded', function () {
     );
 
 
-    new Chart(
+    const monitoringChart = new Chart(
         document.getElementById('monitoringChart'),
         {
             type: 'doughnut',
@@ -426,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function () {
     );
 
 
-    new Chart(
+    const monthlyChart = new Chart(
         document.getElementById('monthlyChart'),
         {
             type: 'line',
@@ -436,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 datasets: [
                     {
-                        label: 'Total Assessments',
+                        label: 'All Assessments',
 
                         data: monthlyCounts,
 
@@ -451,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
 
                     {
-                        label: 'Needs Follow-up',
+                        label: 'Assessments Flagged for Follow-up',
 
                         data: monthlyFollowups,
 
@@ -482,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function () {
     );
 
 
-    new Chart(
+    const followupChart = new Chart(
         document.getElementById('followupChart'),
         {
             type: 'bar',
@@ -520,6 +528,62 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     );
+
+    function updateNumber(id, value) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
+    }
+
+    function fetchLiveAnalytics() {
+        fetch(liveAnalyticsUrl, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Analytics request failed with status ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                updateNumber('analytics-total-residents', data.total_residents);
+                updateNumber('analytics-total-assessments', data.total_assessments);
+                updateNumber('analytics-needs-followup', data.needs_followup);
+                updateNumber('analytics-total-followups', data.total_followups);
+                updateNumber('analytics-assessed-residents', data.assessed_residents);
+                updateNumber('analytics-coverage', data.coverage);
+                updateNumber('analytics-average-bmi', data.average_bmi);
+                updateNumber('analytics-routine-monitoring', data.routine_monitoring);
+                updateNumber('analytics-normal', data.normal);
+                updateNumber('analytics-underweight', data.underweight);
+                updateNumber('analytics-overweight', data.overweight);
+                updateNumber('analytics-obese', data.obese);
+                updateNumber('analytics-pending-followups', data.pending_followups);
+                updateNumber('analytics-completed-followups', data.completed_followups);
+                updateNumber('analytics-referral-followups', data.referral_followups);
+
+                statusChart.data.datasets[0].data = data.status_chart_data;
+                statusChart.update();
+                monitoringChart.data.datasets[0].data = data.monitoring_chart_data;
+                monitoringChart.update();
+                monthlyChart.data.labels = data.months;
+                monthlyChart.data.datasets[0].data = data.monthly_counts;
+                monthlyChart.data.datasets[1].data = data.monthly_needs_followup;
+                monthlyChart.update();
+                followupChart.data.datasets[0].data = data.followup_chart_data;
+                followupChart.update();
+
+                lastUpdated.textContent = `Updating every 15 seconds · Last updated ${data.last_updated}`;
+            })
+            .catch(error => {
+                console.error('Live analytics update failed:', error);
+                lastUpdated.textContent = 'Live update failed. Displayed data may be out of date.';
+            });
+    }
+
+    fetchLiveAnalytics();
+    window.setInterval(fetchLiveAnalytics, 15000);
 
 });
 

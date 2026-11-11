@@ -204,7 +204,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for a in assessments %}
+                    {% for a in page_obj %}
                     <tr>
                         <td>{{ a.assessment_date }}</td>
                         <td>{{ a.resident.first_name }} {{ a.resident.last_name }}</td>
@@ -234,10 +234,15 @@
     </div>
 </div>
 
+{% include "shared/pagination.html" %}
+
+{% include "shared/report_assignatory.html" %}
+
 <style>
 @media print {
     body { background: white !important; }
     .sidebar, .topbar, form, .btn, .report-head .d-flex { display: none !important; }
+    .pagination { display: none !important; }
     .card { border: none !important; box-shadow: none !important; }
     table { font-size: 12px; }
 }

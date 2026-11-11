@@ -1,9 +1,17 @@
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_GET
 from django.db.models import Count, Avg
 from django.db.models.functions import TruncMonth
+from django.utils import timezone
 
-from nutrition.models import NutritionAssessment, FollowUpRecord
+from activity_logs.utils import exclude_role_archived
+from nutrition.models import (
+    NutritionAssessment,
+    FollowUpRecord,
+    current_assessments,
+)
 from residents.models import Resident
 
 
@@ -14,8 +22,7 @@ def get_template(request, staff_template, admin_template):
     return staff_template
 
 
-@login_required(login_url='login')
-def analytics_dashboard(request):
+def get_analytics_data(user):
 
     # ==========================================
     # BASE QUERYSETS
@@ -24,6 +31,15 @@ def analytics_dashboard(request):
     assessments = NutritionAssessment.objects.all()
     residents = Resident.objects.all()
     followups = FollowUpRecord.objects.all()
+
+    role = 'admin' if user.is_superuser else 'staff'
+    assessments = exclude_role_archived(assessments, role)
+    current_status_assessments = exclude_role_archived(
+        current_assessments(),
+        role,
+    )
+    residents = exclude_role_archived(residents, role)
+    followups = exclude_role_archived(followups, role)
 
 
     # ==========================================
@@ -40,7 +56,7 @@ def analytics_dashboard(request):
     # ==========================================
 
     assessed_residents = (
-        assessments
+        current_status_assessments
         .values('resident_id')
         .distinct()
         .count()
@@ -59,19 +75,19 @@ def analytics_dashboard(request):
     # NUTRITION STATUS
     # ==========================================
 
-    normal = assessments.filter(
+    normal = current_status_assessments.filter(
         nutritional_status='Normal'
     ).count()
 
-    underweight = assessments.filter(
+    underweight = current_status_assessments.filter(
         nutritional_status='Underweight'
     ).count()
 
-    overweight = assessments.filter(
+    overweight = current_status_assessments.filter(
         nutritional_status='Overweight'
     ).count()
 
-    obese = assessments.filter(
+    obese = current_status_assessments.filter(
         nutritional_status='Obese'
     ).count()
 
@@ -80,11 +96,11 @@ def analytics_dashboard(request):
     # MONITORING FLAGS
     # ==========================================
 
-    routine_monitoring = assessments.filter(
+    routine_monitoring = current_status_assessments.filter(
         monitoring_flag='Routine Monitoring'
     ).count()
 
-    needs_followup = assessments.filter(
+    needs_followup = current_status_assessments.filter(
         monitoring_flag='Needs Follow-up'
     ).count()
 
@@ -257,9 +273,14 @@ def analytics_dashboard(request):
         'status_chart_data': status_chart_data,
         'monitoring_chart_data': monitoring_chart_data,
         'followup_chart_data': followup_chart_data,
+        'last_updated': timezone.localtime().strftime('%b %d, %Y %I:%M:%S %p'),
     }
 
+    return context
 
+
+@login_required(login_url='login')
+def analytics_dashboard(request):
     return render(
         request,
         get_template(
@@ -267,5 +288,11 @@ def analytics_dashboard(request):
             'analytics/dashboard.html',
             'admin_analytics/dashboard.html'
         ),
-        context
+        get_analytics_data(request.user)
     )
+
+
+@login_required(login_url='login')
+@require_GET
+def live_analytics_stats(request):
+    return JsonResponse(get_analytics_data(request.user))
